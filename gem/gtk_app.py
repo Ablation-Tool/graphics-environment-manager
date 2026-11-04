@@ -1416,6 +1416,7 @@ class InvestigationWorkspace(Gtk.Box):
             ("Measure next-token accessible volume", self.measure_accessible_volume),
             ("Advise on next action", self.advise_next_action),
             ("Run equation tournament", self.run_equation_tournament),
+            ("Align landmarks (Procrustes)", self.align_landmarks),
             ("Copy follow-up note", self.copy_follow_up),
             ("Show in file manager", self.show_in_files),
         ):
@@ -2088,6 +2089,48 @@ class InvestigationWorkspace(Gtk.Box):
 
     def run_equation_tournament(self):
         self.measure_accessible_volume(tournament=True)
+
+    def align_landmarks(self, path=None):
+        if self.selected_event is None:
+            return
+        if self.prediction_future and not self.prediction_future.done():
+            return
+        if self.rescan_future and not self.rescan_future.done():
+            self.counts.set_text("Wait for the directory rescan before aligning landmarks")
+            return
+        if path is None:
+            dialog = Gtk.FileChooserDialog(
+                title="Choose landmark correspondences",
+                transient_for=self.get_toplevel(),
+                action=Gtk.FileChooserAction.OPEN,
+                buttons=("_Cancel", Gtk.ResponseType.CANCEL, "_Open", Gtk.ResponseType.ACCEPT),
+            )
+            dialog.set_current_folder(str(self.workspace))
+            file_filter = Gtk.FileFilter()
+            file_filter.set_name("JSON files")
+            file_filter.add_pattern("*.json")
+            dialog.add_filter(file_filter)
+            response = dialog.run()
+            path = dialog.get_filename()
+            dialog.destroy()
+            if response != Gtk.ResponseType.ACCEPT:
+                return
+        try:
+            document = json.loads(Path(path).read_text(encoding="utf-8"))
+            pairs = document["correspondences"]
+            source = [pair["source"] for pair in pairs]
+            target = [pair["target"] for pair in pairs]
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            self.counts.set_text(f"Unable to load landmarks: {error}")
+            self.counts.set_tooltip_text(str(error))
+            return
+        self.progress.show()
+        self.cancel_button.hide()
+        self.counts.set_text("Aligning landmarks…")
+        self.prediction_future = self.executor.submit(
+            lambda: GemLabHost(self.session).align_landmarks(source, target),
+        )
+        self.prediction_poll_id = GLib.timeout_add(100, self.poll_prediction)
 
     def poll_prediction(self):
         if self.closed:

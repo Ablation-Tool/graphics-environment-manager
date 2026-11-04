@@ -656,6 +656,36 @@ class LandmarkCase(unittest.TestCase):
         self.assertTrue(np.allclose(result.translation, translation))
         self.assertLess(result.rms, 1e-12)
 
+    def test_landmark_host_exports_replayable_procrustes_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            result = GemLabHost(session).align_landmarks(self.source, self.target)
+            self.assertTrue(result.export.passed)
+            self.assertTrue(result.export.replay.matches_recorded)
+            self.assertEqual(result.report["affine_design_rank"], 4)
+            self.assertFalse(result.report["affine_unique"])
+            self.assertEqual(result.report["landmark_evidence_event_id"], result.evidence["id"])
+            self.assertEqual(result.evidence["status"], "complete_scoped")
+            self.assertEqual(result.evidence["parent_id"], result.export.evidence["id"])
+            self.assertTrue((result.path / "landmark-report.json").is_file())
+            self.assertTrue(replay(result.path).matches_recorded)
+
+    def test_landmark_cli_exports_json_evidence(self):
+        example = Path(__file__).resolve().parents[1] / "examples" / "landmark-alignment" / "landmarks.json"
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                result = gem_main([
+                    "landmarks", str(example), "--session", str(session.root), "--json",
+                ])
+            self.assertEqual(result, 0)
+            report = json.loads(output.getvalue())
+            self.assertTrue(report["geometry"]["source_vdi_passed"])
+            self.assertTrue(report["geometry"]["replay_matches_recorded"])
+            self.assertEqual(report["affine_design_rank"], 4)
+            self.assertEqual(len(report["source"]), 2)
+
 
 class AgentCase(unittest.TestCase):
     def fake_agent(self, directory):

@@ -1,5 +1,9 @@
 from dataclasses import dataclass
+import hashlib
+import json
 
+from .events import atomic_write
+from .landmarks import alignment_document, affine_design, landmark_scene, similarity_procrustes
 from .model import scene_from_events
 from .runner import export_run, next_run_directory, replay
 
@@ -16,6 +20,15 @@ class GemExport:
             self.run.passed and self.replay.passed and self.replay.matches_recorded
             and self.evidence["status"] == "complete_scoped"
         )
+
+
+@dataclass(frozen=True)
+class LandmarkRun:
+    path: object
+    report: dict
+    evidence: dict
+    export: GemExport
+    alignment: object
 
 
 class GemLabHost:
@@ -154,6 +167,65 @@ class GemLabHost:
         if not scene.objects:
             raise ValueError("No investigation nodes are available for GEM export")
         return self.export_scene(scene, parent_id)
+
+    def align_landmarks(self, source, target, allow_reflection=False, parent_id=None):
+        import numpy as np
+
+        source = np.asarray(source, dtype=np.float64)
+        target = np.asarray(target, dtype=np.float64)
+        alignment = similarity_procrustes(source, target, allow_reflection=allow_reflection)
+        scene = landmark_scene(source, target, alignment)
+        parent_id = parent_id or self.session.current_state()["selected_id"]
+        exported = self.export_scene(scene, parent_id)
+        design, _ = affine_design(source, target)
+        rank = int(np.linalg.matrix_rank(design))
+        digest = hashlib.sha256(json.dumps({
+            "source": source.tolist(), "target": target.tolist(),
+            "allow_reflection": allow_reflection,
+            "alignment": alignment_document(alignment),
+        }, sort_keys=True).encode("utf-8")).hexdigest()
+        report = {
+            "schema_version": 1,
+            "instrument": "least-squares Procrustes landmark alignment",
+            "source": source.tolist(),
+            "target": target.tolist(),
+            "alignment": alignment_document(alignment),
+            "affine_design_rank": rank,
+            "affine_unique": rank == 6,
+            "run_digest": digest,
+            "geometry": {
+                "scene_digest": scene.digest(),
+                "run": str(exported.run.path),
+                "evidence_event_id": exported.evidence["id"],
+                "source_vdi_passed": exported.run.passed,
+                "replay_passed": exported.replay.passed,
+                "replay_matches_recorded": exported.replay.matches_recorded,
+            },
+            "scope": [
+                "The transform is fitted only to the supplied landmark correspondences.",
+                "Two pairs cannot uniquely determine a full affine transform; a third non-collinear pair is required.",
+                "Exact landmark residuals do not establish whole-shape, anatomical, or semantic correctness.",
+            ],
+        }
+        report_path = exported.run.path / "landmark-report.json"
+        atomic_write(report_path, json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+        passed = exported.passed and alignment.rms <= 1e-6
+        evidence = self.session.emit(
+            f"evidence:landmark-procrustes:{digest[:24]}",
+            exported.evidence["id"],
+            "evidence",
+            f"Landmark Procrustes alignment · RMS {alignment.rms:.3g}",
+            "complete_scoped" if passed else "partial",
+            "tool",
+            report_path.relative_to(self.session.root).as_posix(),
+            f"Least-squares similarity fit. Scale={alignment.scale:.9f}; det(R)={alignment.determinant:.1f}; RMS={alignment.rms:.6g}.\n"
+            f"Geometry replay matches recorded reports: {exported.replay.matches_recorded}.\n"
+            f"Affine design rank={rank}/6; underdetermined with two pairs.",
+            f"Scoped to {len(source)} landmark pairs and the stated similarity/VDI checks; no whole-shape or unique-affine claim",
+        )
+        report["landmark_evidence_event_id"] = evidence["id"]
+        atomic_write(report_path, json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+        return LandmarkRun(exported.run.path, report, evidence, exported, alignment)
 
     def measure_prediction(self, model_dir=None, thresholds=None, predictor=None):
         from .prediction import THRESHOLDS, measure_session

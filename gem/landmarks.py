@@ -117,3 +117,68 @@ def affine_procrustes(source, target, allow_underdetermined=False):
     translation = np.array([parameters[2], parameters[5]])
     predicted = (matrix @ source.T).T + translation
     return AffineAlignment(matrix, translation, predicted, _rms(predicted, target), rank, unique)
+
+
+def alignment_document(alignment):
+    return {
+        "scale": alignment.scale,
+        "rotation": alignment.rotation.tolist(),
+        "translation": alignment.translation.tolist(),
+        "determinant": alignment.determinant,
+        "angle_degrees": alignment.angle_degrees,
+        "allow_reflection": alignment.allow_reflection,
+        "predicted": alignment.predicted.tolist(),
+        "rms": alignment.rms,
+    }
+
+
+def landmark_scene(source, target, alignment):
+    from .model import Scene
+
+    np = _numpy()
+    source, target = _paired(source, target)
+    predicted = np.asarray(alignment.predicted, dtype=np.float64)
+    objects = []
+    constraints = [{"type": "inside_canvas", "object": "*"}]
+    for index, (source_point, target_point, fitted_point) in enumerate(zip(source, target, predicted)):
+        source_id = f"source:{index}"
+        target_id = f"target:{index}"
+        fitted_id = f"fitted:{index}"
+        connector_id = f"correspondence:{index}"
+        objects.extend([
+            {
+                "id": source_id, "type": "ellipse", "role": "source_landmark",
+                "center": (source_point * 10).tolist(), "radii": [35, 35],
+                "fill": "red", "stroke": "black", "width": 10,
+            },
+            {
+                "id": target_id, "type": "ellipse", "role": "target_landmark",
+                "center": (target_point * 10).tolist(), "radii": [35, 35],
+                "fill": "blue", "stroke": "black", "width": 10,
+            },
+            {
+                "id": fitted_id, "type": "ellipse", "role": "fitted_landmark",
+                "center": (fitted_point * 10).tolist(), "radii": [18, 18],
+                "fill": "green", "stroke": "black", "width": 10,
+            },
+            {
+                "id": connector_id, "type": "line", "role": "correspondence",
+                "from": source_id, "to": target_id,
+                "points": [(source_point * 10).tolist(), (target_point * 10).tolist()],
+                "stroke": "gray", "width": 10,
+            },
+        ])
+        constraints.extend([
+            {"type": "connected", "a": connector_id, "b": source_id, "anchor": "center", "endpoint": 0},
+            {"type": "connected", "a": connector_id, "b": target_id, "anchor": "center", "endpoint": 1},
+            {"type": "aligned", "a": fitted_id, "b": target_id, "axis": "center_x"},
+            {"type": "aligned", "a": fitted_id, "b": target_id, "axis": "center_y"},
+        ])
+    return Scene.from_dict({
+        "schema_version": 1,
+        "id": "landmark-procrustes",
+        "title": "Landmark Procrustes alignment",
+        "canvas": {"width": 6000, "height": 7000},
+        "objects": objects,
+        "constraints": constraints,
+    })

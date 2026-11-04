@@ -734,6 +734,17 @@ with tempfile.TemporaryDirectory(prefix="gem-tab-churn-") as temporary:
         self.assertIn("Equation tournament", tournament_row[0])
         self.assertEqual(tournament_row[2], "Complete (scoped)")
         self.assertEqual(self.window.session.current_state()["selected_id"], tournament_id)
+        example = Path(__file__).resolve().parents[1] / "examples" / "landmark-alignment" / "landmarks.json"
+        self.window.align_landmarks(example)
+        self.wait_for(
+            lambda: any(id.startswith("evidence:landmark-procrustes:") for id in self.window.node_iters),
+            "landmark evidence did not appear in the visible Lab",
+        )
+        landmark_id = next(id for id in self.window.node_iters if id.startswith("evidence:landmark-procrustes:"))
+        landmark_row = self.window.store[self.window.node_iters[landmark_id]]
+        self.assertIn("Landmark Procrustes alignment", landmark_row[0])
+        self.assertEqual(landmark_row[2], "Complete (scoped)")
+        self.assertEqual(self.window.session.current_state()["selected_id"], landmark_id)
 
     def test_agent_reads_selection_and_updates_visible_status(self):
         self.close_current()
@@ -882,7 +893,8 @@ with tempfile.TemporaryDirectory(prefix="gem-tab-churn-") as temporary:
             [item.get_label() for item in workspace.node_overflow.get_popup().get_children()],
             [
                 "Measure next-token accessible volume", "Advise on next action",
-                "Run equation tournament", "Copy follow-up note", "Show in file manager",
+                "Run equation tournament", "Align landmarks (Procrustes)",
+                "Copy follow-up note", "Show in file manager",
             ],
         )
         self.assertEqual(workspace.star_button.get_accessible().get_name(), "Star selected node")

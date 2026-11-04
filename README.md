@@ -204,7 +204,14 @@ Run the numerical example and write its full JSON report:
 python examples/landmark-alignment/procrustes.py --output /tmp/landmark-report.json
 ```
 
-The reusable implementations are `gem.landmarks.similarity_procrustes` and `gem.landmarks.affine_procrustes`. NumPy is the only additional requirement for this example.
+Run it through the canonical Spatial IR → VDI → replay pipeline:
+
+```bash
+gem landmarks examples/landmark-alignment/landmarks.json \
+  --session /path/to/project-session
+```
+
+The native GTK node menu also includes **Align landmarks (Procrustes)**. Both paths produce replayed geometry evidence and a scoped Procrustes report in the Lab. The reusable mathematical implementations are `gem.landmarks.similarity_procrustes` and `gem.landmarks.affine_procrustes`; NumPy is their only additional requirement.
 
 </details>
 
@@ -294,7 +301,7 @@ The GTK node menu includes **Measure next-token accessible volume**, **Advise on
 - `gem/prediction.py` — live context construction, ONNX inference, accessible volume, and evidence artifacts.
 - `gem/steering.py` — deterministic advisories, modes, and same-context trends.
 - `gem/tournament.py` — fixed/adaptive comparisons and context attacks.
-- `gem/landmarks.py` and `examples/landmark-alignment/` — similarity and affine Procrustes alignment with the two-pair worked example.
+- `gem/landmarks.py` and `examples/landmark-alignment/` — Procrustes solvers, native Spatial IR scenes, and replayable alignment evidence.
 - `stress/` — the master's core, native, desktop-input, installer, and platform validation suites.
 - `packaging/` — native Linux, Windows, and macOS packaging sources.
 

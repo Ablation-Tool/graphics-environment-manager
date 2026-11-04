@@ -172,6 +172,30 @@ Stacking these rows gives \(D\theta=b\), solved by least squares with \(\theta=D
 
 The two pairs here provide four scalar equations, so \(\operatorname{rank}D=4<6\). The full affine transform is therefore **underdetermined**, not unique. `np.linalg.lstsq` can return a minimum-norm solution, but presenting that as the recovered affine alignment would be misleading. The example reports the rank instead of making that claim.
 
+## Native Graphics Environment Manager integration
+
+The example also runs inside the canonical Ablation graphical environment, following the same human/agent + unified-memory architecture shown in the supplied bicameral diagram and flow animation:
+
+```text
+Selected Lab node
+  → Procrustes alignment
+  → Spatial IR source and target landmarks + fitted points + connectors
+  → VDI export and device checks
+  → replayed geometry evidence
+  → scoped Procrustes evidence for the human and agent
+```
+
+Run it through the shared Lab host:
+
+```bash
+gem landmarks examples/landmark-alignment/landmarks.json \
+  --session /path/to/project-session
+```
+
+Use `--allow-reflection` for the orientation-reversing solution and `--json` for the complete report. The GTK node menu also provides **Align landmarks (Procrustes)**, with a JSON chooser and background execution.
+
+Each run contains the normal `scene.json`, VDI variants, `preview.svg`, verification reports, and `landmark-report.json`. The Procrustes evidence is a child of the replayed geometry evidence and records the transform, residual RMS, affine rank, and scope limits. No model inference is used for this geometric example.
+
 ## Reproduce
 
 From the repository root:

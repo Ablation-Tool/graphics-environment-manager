@@ -80,6 +80,12 @@ def _parser():
     tournament.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
     tournament.add_argument("--json", action="store_true", help="print the complete tournament report")
 
+    landmarks = commands.add_parser("landmarks", help="fit a Procrustes similarity and export replayable landmark evidence")
+    landmarks.add_argument("correspondences", help="JSON document containing a correspondences array")
+    landmarks.add_argument("--session", required=True, help="investigation session directory")
+    landmarks.add_argument("--allow-reflection", action="store_true", help="permit orientation-reversing orthogonal alignment")
+    landmarks.add_argument("--json", action="store_true", help="print the complete alignment report")
+
     launch = commands.add_parser("launch", help="choose a target and open the Lab inside GEM")
     launch.add_argument("--toolkit", choices=("auto", "gtk", "tk"), default="auto")
     launch_agents = launch.add_mutually_exclusive_group()
@@ -122,6 +128,30 @@ def _print_report(report):
 def main(argv=None):
     arguments = _parser().parse_args(argv)
     try:
+        if arguments.command == "landmarks":
+            from gem.events import Session
+            from .host import GemLabHost
+
+            document = json.loads(Path(arguments.correspondences).read_text(encoding="utf-8"))
+            pairs = document.get("correspondences") if isinstance(document, dict) else None
+            if not isinstance(pairs, list):
+                raise ValueError("correspondence JSON must contain a correspondences array")
+            source = [pair["source"] for pair in pairs]
+            target = [pair["target"] for pair in pairs]
+            result = GemLabHost(Session(arguments.session)).align_landmarks(
+                source, target, allow_reflection=arguments.allow_reflection,
+            )
+            if arguments.json:
+                print(json.dumps(result.report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                alignment = result.alignment
+                print(f"Scale: {alignment.scale:.10f}")
+                print(f"Angle: {alignment.angle_degrees:.6f}°")
+                print(f"RMS: {alignment.rms:.6g}")
+                print(f"Determinant: {alignment.determinant:.1f}")
+                print(f"Run: {result.path}")
+                print(f"Evidence: {result.evidence['id']}")
+            return 0
         if arguments.command == "lab-state":
             from gem.events import Session
             from .host import GemLabHost

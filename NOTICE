@@ -1,5 +1,25 @@
 Graphics Environment Manager (GEM)
 
+Historical origin
+-----------------
+GEM did not originate with this repository. The original Graphics Environment
+Manager was developed by Digital Research with Lee Jay Lorenzen and first
+released on February 28, 1985. Gary Kildall oversaw its creation at Digital
+Research. Dorothy McEwen Kildall co-founded Digital Research and managed the
+company's marketing and daily operations.
+
+This separate modern application is not the original Digital Research GEM
+desktop and contains no original Digital Research GEM source code. Historical
+acknowledgment does not imply affiliation with or endorsement by Digital
+Research or the Kildall family.
+
+References:
+- https://en.wikipedia.org/wiki/GEM_(desktop_environment)
+- https://en.wikipedia.org/wiki/Gary_Kildall
+- https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall
+
+Modern code origin
+------------------
 This repository is derived from the GEM native workbench and METRIX terminal
 components in Ablation (https://github.com/Ablation-Tool/ablation), particularly
 gem-lab/gem and gem-lab/metrix. The split dashboard/agent design, append-only

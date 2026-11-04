@@ -171,6 +171,18 @@ Keep `.gem/` out of version control if it is personal working state, or commit i
 
 GEM supplies the environment and integration, not intelligence or domain-specific tools. Your agent does the work; your configuration defines the dashboard. This first template deliberately leaves out Ablation's reverse-engineering engine, Spatial IR, VDI renderer, and investigation-specific statuses.
 
+## Origin and naming
+
+**GEM did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.
+
+This is a separate, modern application derived from the Ablation GEM workbench. It is **not** the original Digital Research GEM desktop, an emulator for it, or a continuation of its source code. No original Digital Research GEM source code is included here, and no affiliation with or endorsement by Digital Research or the Kildall family is implied.
+
+Historical references:
+
+- [GEM (desktop environment)](https://en.wikipedia.org/wiki/GEM_(desktop_environment)) — the original operating environment, its history, VDI, AES, and desktop.
+- [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) — Digital Research co-founder and the person who oversaw GEM's creation.
+- [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) — microcomputer industry pioneer and Digital Research co-founder.
+
 ## License and attribution
 
-GPL-3.0-or-later, matching the Ablation GEM workbench from which this template is derived. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+The modern code in this repository is GPL-3.0-or-later, matching the Ablation GEM workbench from which it is derived. Historical acknowledgment of the original GEM does not change that license or imply that this repository contains the original desktop's source. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

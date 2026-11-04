@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "name": "My GEM Project",
+  "name": "My Graphics Environment Manager Project",
   "description": "A reusable dashboard for a project and its AI agent. Rename this project and replace the sample items.",
   "items": [
     {
       "id": "milestone:setup",
       "type": "milestone",
-      "label": "Make this GEM your own",
+      "label": "Make this Graphics Environment Manager your own",
       "details": "A sample milestone. Edit or remove these items before initializing your session."
     },
     {

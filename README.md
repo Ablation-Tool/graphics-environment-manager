@@ -50,32 +50,51 @@ They are examples of the broader approach, not dependencies of this repository. 
 <details>
 <summary><strong>Quick start</strong></summary>
 
-Requirements: Python 3.10+ with Tkinter. Linux, macOS, and Windows are supported by the implementation; Linux uses a POSIX terminal and native Windows uses ConPTY through `pywinpty`.
+Requirements: **Python 3.10+ with Tkinter**. The standard `python -m pip install -e .` command installs the Python runtime dependencies: `pyte`, `tkinterdnd2`, and `pywinpty` on native Windows. No optional extras are required for the full application.
+
+### Windows
+
+1. Install Python from [python.org](https://www.python.org/downloads/windows/) with the **tcl/tk and IDLE** component enabled.
+2. In PowerShell, create and activate the environment with `py -m venv .venv` and `.venv\Scripts\Activate.ps1`.
+3. Run `python -m pip install -e .`. This installs `pywinpty` automatically for the embedded ConPTY terminal, along with `pyte` and `tkinterdnd2`.
+
+### macOS
+
+1. Install a Python 3.10+ build that includes Tkinter, such as the [python.org macOS installer](https://www.python.org/downloads/macos/). Homebrew users may need the `python-tk` formula matching their Python version.
+2. Create and activate the environment with `python3 -m venv .venv` and `source .venv/bin/activate`.
+3. Run `python -m pip install -e .`. The embedded agent uses the built-in POSIX PTY support; `pywinpty` is correctly excluded by its Windows platform marker.
+
+### Linux
+
+Install Python, virtual-environment support, and Tkinter with your system package manager:
+
+```bash
+# Ubuntu / Debian
+sudo apt install python3 python3-venv python3-tk
+
+# Fedora
+sudo dnf install python3 python3-tkinter
+
+# Arch Linux
+sudo pacman -S python tk
+```
+
+Then create and activate the environment with `python3 -m venv .venv` and `source .venv/bin/activate`, and run `python -m pip install -e .`. The embedded agent uses the built-in POSIX PTY support.
+
+### Install and launch
 
 ```bash
 git clone https://github.com/Ablation-Tool/graphics-environment-manager.git
 cd graphics-environment-manager
-python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python3 -m venv .venv              # Windows: py -m venv .venv
+source .venv/bin/activate          # Windows PowerShell: .venv\Scripts\Activate.ps1
 python -m pip install -e .
 gem init my-project
 cd my-project
 gem open . --agent kimi
 ```
 
-On Ubuntu/Debian, Tkinter is available from the `python3-tk` system package. Native Windows agent support needs the optional Windows dependency:
-
-```powershell
-python -m pip install -e ".[windows]"
-```
-
-Optional local file/folder drag-and-drop into the agent terminal:
-
-```bash
-python -m pip install -e ".[drop]"
-```
-
-Dropped paths are quoted and inserted without pressing Enter, so you review the command before running it.
+The `gem2red.png` application icon is bundled inside the package and loaded on Windows, Linux, and macOS. The original image path is not needed after installation. Dropped paths are quoted and inserted without pressing Enter, so you review the command before running it.
 
 </details>
 

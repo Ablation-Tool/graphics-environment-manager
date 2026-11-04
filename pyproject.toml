@@ -10,7 +10,11 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE", "NOTICE"]
-dependencies = ["pyte>=0.8.1,<1"]
+dependencies = [
+    "pyte>=0.8.1,<1",
+    "tkinterdnd2==0.7.0",
+    "pywinpty>=2,<3; sys_platform == 'win32'",
+]
 
 [project.optional-dependencies]
 drop = ["tkinterdnd2==0.7.0"]
@@ -21,3 +25,6 @@ gem = "gem.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["gem*"]
+
+[tool.setuptools.package-data]
+gem = ["assets/*.png"]

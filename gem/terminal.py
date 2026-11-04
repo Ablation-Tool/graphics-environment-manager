@@ -116,7 +116,7 @@ class TerminalPanel(ttk.Frame):
     def configure_drop_target(self):
         try:
             if TkinterDnD is None:
-                raise RuntimeError("install the optional 'drop' dependencies")
+                raise RuntimeError("reinstall the package dependencies to restore tkinterdnd2")
             TkinterDnD._require(self.winfo_toplevel())
             self.text.drop_target_register(DND_FILES)
             self.text.dnd_bind("<<Drop>>", self.on_drop)

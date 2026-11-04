@@ -41,10 +41,13 @@ class DashboardApp:
         self.summary_variable = tk.StringVar()
         self.count_variables = {status: tk.StringVar(value="0") for status in STATUSES}
         self.detail_variable = tk.StringVar()
-        self.root.title(f"GEM · {session.project}")
+        self.root.title(f"Graphics Environment Manager · {session.project}")
         self.root.geometry("1500x900")
         self.root.minsize(900, 560)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
+        icon_path = Path(__file__).resolve().parent / "assets" / "gem2red.png"
+        self.icon_image = tk.PhotoImage(master=self.root, file=str(icon_path))
+        self.root.iconphoto(True, self.icon_image)
         self.configure_theme()
         self.build_header()
         self.build_workspace()
@@ -71,7 +74,7 @@ class DashboardApp:
     def build_header(self):
         header = ttk.Frame(self.root, style="Header.TFrame", padding=(16, 12))
         header.pack(fill="x")
-        ttk.Label(header, text="GEM", style="Brand.TLabel").pack(side="left")
+        ttk.Label(header, image=self.icon_image, style="Header.TLabel").pack(side="left")
         title = ttk.Frame(header, style="Header.TFrame", padding=(18, 0))
         title.pack(side="left", fill="x", expand=True)
         ttk.Label(title, text=self.session.project, style="Project.TLabel").pack(anchor="w")

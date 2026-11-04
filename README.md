@@ -2,8 +2,6 @@
 
 A standalone native dashboard and agent environment for **your project + your AI agent**.
 
-This is the standalone application repository for Graphics Environment Manager, not an Ablation submodule, add-on, or subdirectory. Derived from the Ablation Graphics Environment Manager workbench, it pairs a reusable live project dashboard with the interactive agent CLI you already use. It does not require Ablation and does not include a model, API keys, or a simulated chatbot.
-
 ## Origin and naming
 
 **Graphics Environment Manager did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.
@@ -17,7 +15,15 @@ Historical references:
 - [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) — microcomputer industry pioneer and Digital Research co-founder.
 
 <details>
-<summary><strong>What you get</strong></summary>
+<summary><strong>About this repository</strong></summary>
+
+**Graphics Environment Manager is a standalone native graphical environment and GUI that embeds your own native AI agent CLI beside a live project dashboard.** The human and agent share the current selection, project items, and persistent history instead of working in separate, disconnected interfaces.
+
+This repository contains the complete standalone application—not an Ablation submodule, add-on, or subdirectory. It does not supply a model, API keys, or a simulated chatbot. Your existing agent keeps its own authentication, tools, permissions, and provider policy.
+
+**Use it as a build template for whatever you want.** Start with the generic dashboard and agent bridge, replace the sample items in `gem.json`, and add your own domain-specific tools and workflow. Software development, research, reverse engineering, incident response, and personal project management can all use the same human-plus-agent environment without sharing the same application logic.
+
+The build template includes:
 
 - A native split workbench: project items on the left, a real agent terminal on the right.
 - Milestones, tasks, and notes defined in a small `gem.json` file.
@@ -26,6 +32,18 @@ Historical references:
 - An append-only event history with atomic state writes, file locking, stable IDs, and stale-selection checks.
 - Kimi, Claude, Codex, or any other interactive CLI through `--agent-command`.
 - A dashboard that remains useful with no agent installed or configured.
+
+</details>
+
+<details>
+<summary><strong>Examples: Ablation and Cerotto</strong></summary>
+
+These existing projects show how the same kind of native graphical environment and embedded agent can serve very different purposes:
+
+- **[Ablation](https://github.com/Ablation-Tool/ablation)** — an agent-guided reverse-engineering workbench with a shared investigation tree, evidence states, charts, and an embedded agent terminal. Its Graphics Environment Manager workbench supplied the modern code from which this standalone repository was derived.
+- **[Cerotto](https://github.com/Ablation-Tool/cerotto)** — a native forensic workbench for investigating attacks involving autonomous AI agents and sandbox escapes. Its dashboard presents investigation timelines, defense events, encrypted-vault activity, and accessible-volume charts, and it can embed the user's own AI command-line agent.
+
+They are examples of the broader approach, not dependencies of this repository. Use this repository as the generic build template for your own application rather than pulling in Ablation's or Cerotto's domain-specific engines.
 
 </details>
 

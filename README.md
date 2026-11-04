@@ -109,7 +109,7 @@ Use `--toolkit tk` to select the master's Tk interface explicitly or `--toolkit 
 <details>
 <summary><strong>Launch and agent examples</strong></summary>
 
-Open the native target chooser:
+Open GEM and choose a target inside the application:
 
 ```bash
 gem launch --agent kimi

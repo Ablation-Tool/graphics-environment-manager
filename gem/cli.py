@@ -86,7 +86,7 @@ def _parser():
     landmarks.add_argument("--allow-reflection", action="store_true", help="permit orientation-reversing orthogonal alignment")
     landmarks.add_argument("--json", action="store_true", help="print the complete alignment report")
 
-    launch = commands.add_parser("launch", help="choose a target and open the Lab inside GEM")
+    launch = commands.add_parser("launch", help="open GEM and choose a target inside the application")
     launch.add_argument("--toolkit", choices=("auto", "gtk", "tk"), default="auto")
     launch_agents = launch.add_mutually_exclusive_group()
     launch_agents.add_argument("--agent", help="interactive agent executable")

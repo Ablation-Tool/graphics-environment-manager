@@ -1,5 +1,6 @@
-__version__ = "0.1.0"
+"""Graphics Environment Manager for unified investigation and spatial execution."""
 
-from .session import Session
+from .model import Scene, demo_scene, scene_from_events
 
-__all__ = ["Session", "__version__"]
+__all__ = ["Scene", "demo_scene", "scene_from_events"]
+__version__ = "0.2.0"

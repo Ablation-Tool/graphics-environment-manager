@@ -18,21 +18,28 @@ References:
 - https://en.wikipedia.org/wiki/Gary_Kildall
 - https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall
 
-Modern code origin
-------------------
-This repository is derived from the Graphics Environment Manager native
-workbench and METRIX terminal components in Ablation
-(https://github.com/Ablation-Tool/ablation), particularly gem-lab/gem and
-gem-lab/metrix. The split dashboard/agent design, append-only session protocol,
-native terminal implementation, and drag-and-drop handling were adapted for a
-standalone, project-neutral template.
+Canonical modern master and standalone distribution
+---------------------------------------------------
+The canonical modern master is the gem-lab distribution in Ablation:
+https://github.com/Ablation-Tool/ablation
+
+This standalone repository contains that master's actual native workbench,
+including its GTK and Tk interfaces, METRIX terminal components, charts,
+Spatial IR, VDI support, preferences, session protocol, installers, and stress
+suites. It is not an independently redesigned interface. Standalone changes are
+limited to packaging, version metadata, documentation, the supplied PNG/ICO/ICNS
+window and desktop-installer icons, and the matching icon-test expectations.
+The in-app Ablation branding is retained.
 
 The original Ablation project is distributed under GPL-3.0-or-later. This
-derivative repository retains that license; see LICENSE.
+standalone distribution retains that license; see LICENSE.
+
+Upstream copyright and component notices for Ubuntu Update Manager, GNOME
+Baobab, Vanilla Framework icons, terminal palettes, and related materials are
+preserved in UPSTREAM-NOTICE and licenses/.
 
 The terminal emulator uses pyte (MIT) and tkinterdnd2 (MIT), plus pywinpty
 (MIT) on native Windows. Those packages retain their own licenses.
 
-The terminal's named ANSI color arrangements include conventional Tango, Linux
-console, and XTerm colors. No Ablation analysis engine, model, credentials, or
-AI provider code is included.
+The supplied application icon is stored as gem/assets/gem2red.png with native
+ICO and ICNS variants. The original /media path is not a runtime dependency.

@@ -1,14 +1,18 @@
 import copy
+import csv
 import errno
+import json
 import os
 from pathlib import Path
-import queue
+import shlex
 import signal
 import struct
-import threading
+import subprocess
+import sys
 import time
+import queue
+import threading
 import tkinter as tk
-from tkinter import font as tkfont, ttk
 
 if os.name == "nt":
     pty = None
@@ -16,8 +20,13 @@ if os.name == "nt":
 else:
     import pty
     import termios
+from tkinter import filedialog, font as tkfont, ttk
 
+from .agent import parse_agent_command
 from .drop import dropped_payload
+from .inventory import load_records
+from .render import load_summary
+
 
 try:
     import pyte
@@ -28,6 +37,7 @@ try:
     from tkinterdnd2 import COPY, DND_FILES, REFUSE_DROP, TkinterDnD
 except ImportError:
     COPY = REFUSE_DROP = DND_FILES = TkinterDnD = None
+
 
 if pyte is not None:
     class TerminalScreen(pyte.HistoryScreen):
@@ -56,12 +66,25 @@ for index in range(1, 13):
     KEY_SEQUENCES[f"F{index}"] = f"\x1bO{chr(ord('P') + index - 1)}".encode()
 
 
+def human_size(value):
+    if value is None:
+        return "—"
+    units = ("B", "KiB", "MiB", "GiB", "TiB")
+    amount = float(value)
+    index = 0
+    while amount >= 1024 and index < len(units) - 1:
+        amount /= 1024
+        index += 1
+    return f"{amount:.1f} {units[index]}" if index else f"{int(amount)} {units[index]}"
+
+
 class TerminalPanel(ttk.Frame):
-    def __init__(self, parent, workspace, command, status_callback, startup_text=""):
+    def __init__(self, parent, output, workspace, command, status_callback, startup_text=""):
         super().__init__(parent)
         if pyte is None:
-            raise ValueError("The embedded terminal requires pyte. Run: python -m pip install -e .")
-        self.workspace = Path(workspace)
+            raise ValueError("The embedded terminal requires pyte. Install with: python3 -m pip install -e '.[desktop]'")
+        self.output = output
+        self.workspace = workspace
         self.command = command
         self.status_callback = status_callback
         self.startup_text = startup_text
@@ -108,7 +131,7 @@ class TerminalPanel(ttk.Frame):
             self.configure_drop_target()
             self.after_idle(self.start)
         else:
-            self.text.insert("1.0", "No AI agent configured.\n\nUse --agent kimi, --agent claude, --agent codex,\nor --agent-command 'your-agent --flag'.\n\nThe dashboard remains fully usable without an agent.")
+            self.text.insert("1.0", "No external CLI configured.\nRestart with --agent kimi or --agent-command.")
             self.text.configure(state="disabled")
         self.poll_after_id = self.after(30, self.poll)
         self.render_after_id = self.after(60, self.render)
@@ -116,7 +139,7 @@ class TerminalPanel(ttk.Frame):
     def configure_drop_target(self):
         try:
             if TkinterDnD is None:
-                raise RuntimeError("reinstall the package dependencies to restore tkinterdnd2")
+                raise RuntimeError("install tkinterdnd2 0.7.0")
             TkinterDnD._require(self.winfo_toplevel())
             self.text.drop_target_register(DND_FILES)
             self.text.dnd_bind("<<Drop>>", self.on_drop)
@@ -126,16 +149,16 @@ class TerminalPanel(ttk.Frame):
 
     def submit_agent_request(self, text):
         if not self.command or self.fd is None or self.exited or self.closed:
-            raise ValueError("The embedded agent is not running")
+            raise ValueError("Safety request rejected: the embedded CLI is not running")
         if not text or any(ord(character) < 32 or ord(character) == 127 for character in text):
-            raise ValueError("Agent prompts cannot contain control characters")
+            raise ValueError("Safety request rejected: the prompt contains control characters")
         self.write(text.encode("utf-8"))
         self.write(b"\r")
         self.text.focus_set()
 
     def insert_dropped_paths(self, paths):
         if not self.command or self.fd is None or self.exited or self.closed:
-            raise ValueError("Drop rejected: the embedded agent is not running")
+            raise ValueError("Drop rejected: the embedded CLI is not running")
         paths = tuple(paths)
         payload = dropped_payload(paths)
         self.write(payload)
@@ -146,7 +169,7 @@ class TerminalPanel(ttk.Frame):
         try:
             paths = self.text.tk.splitlist(event.data)
             count = self.insert_dropped_paths(paths)
-            self.status_callback(f"Inserted {count} path{'s' if count != 1 else ''}; review before running")
+            self.status_callback(f"Inserted {count} dropped path{'s' if count != 1 else ''}; review before running")
             return COPY
         except (OSError, ValueError, tk.TclError) as error:
             self.status_callback(str(error))
@@ -158,8 +181,9 @@ class TerminalPanel(ttk.Frame):
         environment = os.environ.copy()
         package_root = str(Path(__file__).resolve().parent.parent)
         environment.update({
-            "TERM": "xterm-256color",
-            "COLORTERM": "truecolor",
+            "TERM": "xterm-256color", "COLORTERM": "truecolor",
+            "METRIX_OUTPUT": str(self.output), "METRIX_WORKSPACE": str(self.workspace),
+            "METRIX_CLI": subprocess.list2cmdline([sys.executable, "-m", "metrix"]) if os.name == "nt" else shlex.join([sys.executable, "-m", "metrix"]),
             "PYTHONPATH": package_root + (os.pathsep + environment["PYTHONPATH"] if environment.get("PYTHONPATH") else ""),
         })
         if os.name == "nt":
@@ -172,7 +196,7 @@ class TerminalPanel(ttk.Frame):
                     dimensions=(self.lines, self.columns),
                 )
             except (ImportError, OSError, RuntimeError) as error:
-                self.status_callback(f"Unable to start agent: {error}")
+                self.status_callback(f"Unable to start CLI: {error}")
                 return
             self.fd = True
             self.read_queue = queue.Queue()
@@ -182,20 +206,20 @@ class TerminalPanel(ttk.Frame):
             try:
                 pid, descriptor = pty.fork()
             except OSError as error:
-                self.status_callback(f"Unable to start agent: {error}")
+                self.status_callback(f"Unable to start CLI: {error}")
                 return
             if pid == 0:
                 try:
                     os.chdir(self.workspace)
                     os.execvpe(self.command[0], self.command, environment)
                 except BaseException as error:
-                    os.write(2, f"Unable to start agent: {error}\r\n".encode())
+                    os.write(2, f"Unable to start CLI: {error}\r\n".encode())
                     os._exit(127)
             self.process = pid
             self.fd = descriptor
             os.set_blocking(self.fd, False)
         terminal_kind = "ConPTY" if os.name == "nt" else "PTY"
-        self.status_callback(f"Agent: {Path(self.command[0]).name} · interactive {terminal_kind}")
+        self.status_callback(f"Embedded CLI: {Path(self.command[0]).name} (interactive {terminal_kind})")
         if self.startup_text:
             self.write(self.startup_text.encode("utf-8"))
             self.write(b"\r")
@@ -234,12 +258,12 @@ class TerminalPanel(ttk.Frame):
                         break
                     except OSError as error:
                         if error.errno == errno.EIO:
-                            self.finish("Agent session closed")
+                            self.finish("CLI session closed")
                             break
-                        self.finish(f"Agent read error: {error}")
+                        self.finish(f"CLI read error: {error}")
                         break
                     if not data:
-                        self.finish("Agent session closed")
+                        self.finish("CLI session closed")
                         break
                     self._feed(data)
         if self.process is not None and not self.reaped:
@@ -254,9 +278,9 @@ class TerminalPanel(ttk.Frame):
                 if pid:
                     self.reaped = True
                     code = os.waitstatus_to_exitcode(status) if hasattr(os, "waitstatus_to_exitcode") else status
-                    self.finish(f"Agent exited ({code})")
+                    self.finish(f"CLI exited ({code})")
         if self.process is not None and os.name == "nt" and self.reaped and self.reader_eof:
-            self.finish("Agent session closed")
+            self.finish("CLI session closed")
         if not self.closed:
             self.poll_after_id = self.after(30, self.poll)
 
@@ -315,7 +339,6 @@ class TerminalPanel(ttk.Frame):
             try:
                 pid, _ = os.waitpid(self.process, os.WNOHANG)
             except ChildProcessError:
-                pid = 0
                 self.reaped = True
             if pid:
                 self.reaped = True
@@ -348,7 +371,7 @@ class TerminalPanel(ttk.Frame):
                 self.signal_process(signal.SIGKILL)
                 if not self.wait_for_child(1.0):
                     try:
-                        self.status_callback(f"Agent process {self.process} could not be reaped")
+                        self.status_callback(f"CLI process {self.process} could not be reaped; check the process table")
                     except tk.TclError:
                         pass
         if self.fd is not None:
@@ -398,7 +421,7 @@ class TerminalPanel(ttk.Frame):
             except (BlockingIOError, InterruptedError):
                 break
             except (OSError, UnicodeError, ValueError) as error:
-                self.finish(f"Agent write error: {error}")
+                self.finish(f"CLI write error: {error}")
                 return
             if written <= 0:
                 break
@@ -430,7 +453,7 @@ class TerminalPanel(ttk.Frame):
             return "break"
         data = value.encode("utf-8")
         if len(data) > 8 * 1024 * 1024:
-            self.status_callback("Paste rejected: 8 MiB maximum")
+            self.status_callback("Paste rejected: 8 MiB maximum; use the CLI's file-input workflow")
             return "break"
         self.write(data)
         return "break"
@@ -534,3 +557,195 @@ class TerminalPanel(ttk.Frame):
             self.text.tag_configure("terminal-cursor", background=FG_COLORS["default"], foreground=BG_COLORS["default"])
         self.screen.dirty.clear()
         self.schedule_render()
+
+
+class MetrixDesktop:
+    FILTER_FIELDS = (
+        ("format", "Format"), ("architecture", "Architecture"),
+        ("artifact_class", "Class"), ("status", "Status"),
+        ("analysis_status", "Analysis"),
+    )
+    COLUMNS = ("path", "format", "architecture", "artifact_class", "size_bytes", "sha256", "status")
+
+    def __init__(self, root, output, command=None, workspace=None):
+        self.root = root
+        self.output = Path(output).expanduser().resolve()
+        self.workspace = Path(workspace).expanduser().resolve() if workspace else self.output
+        self.command = command
+        self.records = []
+        self.summary = {}
+        self.visible = []
+        self.sort_key = "path"
+        self.sort_ascending = True
+        self.filter_variables = {}
+        self.filter_boxes = {}
+        self.search_variable = tk.StringVar()
+        self.status_variable = tk.StringVar(value="Loading corpus…")
+        self.agent_variable = tk.StringVar(value="No embedded CLI")
+        self.summary_signature = None
+        self.root.title("METRIX Workbench")
+        self.root.geometry("1500x900")
+        self.root.protocol("WM_DELETE_WINDOW", self.close)
+        top = ttk.Frame(self.root, padding=8)
+        top.pack(fill="x")
+        ttk.Label(top, text="METRIX Workbench", font=("TkDefaultFont", 16, "bold")).pack(side="left")
+        ttk.Label(top, textvariable=self.agent_variable).pack(side="right")
+        panes = ttk.Panedwindow(self.root, orient="horizontal")
+        panes.pack(fill="both", expand=True, padx=8, pady=8)
+        dashboard = ttk.Frame(panes)
+        panes.add(dashboard, weight=3)
+        self.build_dashboard(dashboard)
+        self.terminal = TerminalPanel(panes, self.output, self.workspace, self.command, self.agent_variable.set)
+        panes.add(self.terminal, weight=2)
+        bottom = ttk.Frame(self.root, padding=(8, 0, 8, 8))
+        bottom.pack(fill="x")
+        ttk.Label(bottom, textvariable=self.status_variable).pack(side="left")
+        ttk.Button(bottom, text="Refresh", command=self.reload).pack(side="right")
+        self.reload()
+        self.after_refresh()
+
+    def build_dashboard(self, parent):
+        filters = ttk.Frame(parent)
+        filters.pack(fill="x", pady=(0, 8))
+        ttk.Label(filters, text="Search").grid(row=0, column=0, sticky="w")
+        search = ttk.Entry(filters, textvariable=self.search_variable)
+        search.grid(row=0, column=1, columnspan=5, sticky="ew", padx=(6, 0))
+        search.bind("<KeyRelease>", lambda event: self.render_records())
+        filters.columnconfigure(1, weight=1)
+        for index, (field, label) in enumerate(self.FILTER_FIELDS):
+            variable = tk.StringVar(value="All")
+            box = ttk.Combobox(filters, textvariable=variable, state="readonly", values=("All",), width=16)
+            box.grid(row=1, column=index, sticky="ew", pady=(8, 0), padx=(0 if index == 0 else 5, 0))
+            box.bind("<<ComboboxSelected>>", lambda event: self.render_records())
+            self.filter_variables[field] = variable
+            self.filter_boxes[field] = box
+        actions = ttk.Frame(parent)
+        actions.pack(fill="x", pady=(0, 8))
+        ttk.Button(actions, text="Reset filters", command=self.reset_filters).pack(side="left")
+        ttk.Button(actions, text="Export visible CSV", command=self.export_csv).pack(side="left", padx=6)
+        self.tree = ttk.Treeview(parent, columns=self.COLUMNS, show="headings", selectmode="browse")
+        headings = {"path": "Artifact", "format": "Format", "architecture": "Architecture", "artifact_class": "Class", "size_bytes": "Size", "sha256": "SHA256", "status": "Status"}
+        for column in self.COLUMNS:
+            self.tree.heading(column, text=headings[column], command=lambda value=column: self.sort_records(value))
+            self.tree.column(column, width=350 if column == "path" else 140, stretch=column == "path")
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scrollbar.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        self.tree.bind("<Double-1>", self.show_details)
+
+    def reload(self):
+        try:
+            self.summary = load_summary(self.output)
+            self.records = list(load_records(self.output))
+            self.summary_signature = (self.output / "summary.json").stat().st_mtime_ns
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            self.status_variable.set(f"Unable to load output: {error}")
+            return
+        values = {field: ["All"] + sorted({str(record.get(field) or "—") for record in self.records}) for field, _ in self.FILTER_FIELDS}
+        for field, box in self.filter_boxes.items():
+            current = self.filter_variables[field].get()
+            box.configure(values=values[field])
+            if current not in values[field]:
+                self.filter_variables[field].set("All")
+        self.render_records()
+        self.status_variable.set(f"{len(self.records)} artifacts · {self.summary.get('root', '')} · refreshed")
+
+    def after_refresh(self):
+        try:
+            signature = (self.output / "summary.json").stat().st_mtime_ns
+            if signature != self.summary_signature:
+                self.reload()
+        except OSError:
+            pass
+        self.root.after(2000, self.after_refresh)
+
+    def reset_filters(self):
+        self.search_variable.set("")
+        for variable in self.filter_variables.values():
+            variable.set("All")
+        self.render_records()
+
+    def sort_records(self, key):
+        if self.sort_key == key:
+            self.sort_ascending = not self.sort_ascending
+        else:
+            self.sort_key, self.sort_ascending = key, True
+        self.render_records()
+
+    def render_records(self):
+        terms = self.search_variable.get().casefold().split()
+        self.visible = []
+        for record in self.records:
+            haystack = json.dumps(record, ensure_ascii=False).casefold()
+            if any(term not in haystack for term in terms):
+                continue
+            if any(self.filter_variables[field].get() != "All" and str(record.get(field) or "—") != self.filter_variables[field].get() for field, _ in self.FILTER_FIELDS):
+                continue
+            self.visible.append(record)
+        def sort_value(record):
+            value = record.get(self.sort_key)
+            if self.sort_key == "size_bytes":
+                return (value is None, value if value is not None else 0)
+            return str(value or "").casefold()
+        self.visible.sort(key=sort_value, reverse=not self.sort_ascending)
+        self.tree.delete(*self.tree.get_children())
+        for record in self.visible:
+            values = [record.get(column) for column in self.COLUMNS]
+            values[4] = human_size(record.get("size_bytes"))
+            values[5] = f"{record['sha256'][:16]}…" if record.get("sha256") else "—"
+            self.tree.insert("", "end", iid=record["id"], values=values)
+        self.status_variable.set(f"{len(self.visible)} of {len(self.records)} artifacts · {self.summary.get('root', '')}")
+
+    def show_details(self, _event=None):
+        selection = self.tree.selection()
+        if not selection:
+            return
+        record = next((record for record in self.records if record["id"] == selection[0]), None)
+        if record is None:
+            return
+        window = tk.Toplevel(self.root)
+        window.title(record["path"])
+        window.geometry("850x650")
+        text = tk.Text(window, wrap="word", font=("TkFixedFont", 10))
+        text.pack(fill="both", expand=True)
+        text.insert("1.0", json.dumps(record, indent=2, ensure_ascii=False))
+        text.configure(state="disabled")
+
+    def export_csv(self):
+        destination = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=(("CSV", "*.csv"),), initialfile="metrix-visible.csv")
+        if not destination:
+            return
+        fields = ("id", "path", "format", "architecture", "artifact_class", "size_bytes", "sha256", "status", "analysis_status")
+        with open(destination, "w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(self.visible)
+        self.status_variable.set(f"Exported {len(self.visible)} records to {destination}")
+
+    def close(self):
+        if getattr(self, "closed", False):
+            return
+        self.closed = True
+        self.terminal.stop()
+        try:
+            self.root.destroy()
+        except tk.TclError:
+            pass
+
+
+def run_desktop(output, command=None, workspace=None):
+    if pyte is None:
+        raise ValueError("Desktop support requires pyte. Install with: python3 -m pip install -e '.[desktop]'")
+    output = Path(output).expanduser().resolve()
+    if not (output / "artifacts.jsonl").is_file():
+        raise ValueError(f"METRIX output is missing artifacts.jsonl: {output}")
+    if workspace is not None and not Path(workspace).expanduser().is_dir():
+        raise ValueError(f"CLI workspace is not a directory: {workspace}")
+    root = tk.Tk()
+    app = MetrixDesktop(root, output, command, workspace)
+    try:
+        root.mainloop()
+    finally:
+        app.close()
+    return 0

@@ -53,3 +53,12 @@ The terminal emulator uses pyte (MIT) and tkinterdnd2 (MIT), plus pywinpty
 
 The supplied application icon is stored as gem/assets/gem2red.png with native
 ICO and ICNS variants. The original /media path is not a runtime dependency.
+
+Landmark example attribution
+----------------------------
+The landmark-alignment worked example uses the caption "Aligning two shapes by
+minimizing the distance of corresponding landmark points" from "Linear Algebra?"
+by Daniel Cohen-Or, Olga Sorkine-Hornung, and Chen Greif. Approximate landmark
+coordinates were extracted from a user-supplied screenshot for mathematical
+analysis. The original figure and screenshot are not redistributed in this
+repository.

@@ -183,6 +183,32 @@ SVG and VDI use the Python standard library. PNG and native graphical views requ
 </details>
 
 <details>
+<summary><strong>Worked example: landmark alignment</strong></summary>
+
+The [landmark-alignment example](examples/landmark-alignment/README.md) extracts the four marked landmark **points** from the supplied chapter figure and pairs them into **two correspondences**:
+
+- Lion nose \((83,467)\) → unicorn horn \((328,389)\)
+- Lion tail \((270,513)\) → unicorn tail \((485,560)\)
+
+Coordinates use the original 554 × 659 screenshot, with x rightward and y downward. The example derives the centered least-squares Procrustes solution using SVD and includes the numerical proper-rotation and reflection-allowed alignments:
+
+- Uniform scale: `1.2054659568`
+- Proper-rotation angle: `33.624306°`
+- Both landmark pairs fit to floating-point precision
+
+It also derives the full affine design matrix and shows why these two pairs provide only four scalar equations for six affine unknowns. A unique full affine transform requires a third non-collinear pair; the example reports the rank instead of presenting an underdetermined fit as unique.
+
+Run the numerical example and write its full JSON report:
+
+```bash
+python examples/landmark-alignment/procrustes.py --output /tmp/landmark-report.json
+```
+
+The reusable implementations are `gem.landmarks.similarity_procrustes` and `gem.landmarks.affine_procrustes`. NumPy is the only additional requirement for this example.
+
+</details>
+
+<details>
 <summary><strong>Accessible volume, steering, and equation tournaments</strong></summary>
 
 The optional prediction integration applies the [accessible-volume equation](https://github.com/Ablation-Tool/next-token-predictability) to a real local model distribution using the current Lab selection, recent events, and selected evidence:
@@ -268,6 +294,7 @@ The GTK node menu includes **Measure next-token accessible volume**, **Advise on
 - `gem/prediction.py` — live context construction, ONNX inference, accessible volume, and evidence artifacts.
 - `gem/steering.py` — deterministic advisories, modes, and same-context trends.
 - `gem/tournament.py` — fixed/adaptive comparisons and context attacks.
+- `gem/landmarks.py` and `examples/landmark-alignment/` — similarity and affine Procrustes alignment with the two-pair worked example.
 - `stress/` — the master's core, native, desktop-input, installer, and platform validation suites.
 - `packaging/` — native Linux, Windows, and macOS packaging sources.
 
@@ -278,6 +305,7 @@ python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
 python stress/gem_stress.py PredictionCase
+python stress/gem_stress.py LandmarkCase
 python stress/gtk_stress.py GtkCase.test_prediction_updates_visible_lab
 ```
 

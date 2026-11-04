@@ -29,6 +29,9 @@ from gem.vdi import (
     scene_to_metafile,
 )
 
+if importlib.util.find_spec("numpy"):
+    import numpy as np
+
 
 HAS_GTK = False
 if os.environ.get("DISPLAY"):
@@ -603,6 +606,55 @@ class PredictionCase(unittest.TestCase):
                 self.assertTrue((result.path / f"probabilities-{attack}.npz").is_file())
             self.assertEqual(tournament["tournament_event_id"], result.evidence["id"])
             self.assertIsNone(latest_advisory(session))
+
+
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "landmark tests require NumPy")
+class LandmarkCase(unittest.TestCase):
+    def setUp(self):
+        self.source = [[83, 467], [270, 513]]
+        self.target = [[328, 389], [485, 560]]
+
+    def test_two_pair_similarity_procrustes(self):
+        from gem.landmarks import similarity_procrustes
+
+        result = similarity_procrustes(self.source, self.target)
+        self.assertAlmostEqual(result.scale, 1.2054659568464863)
+        self.assertAlmostEqual(result.determinant, 1.0)
+        self.assertAlmostEqual(result.angle_degrees, 33.62430635369026)
+        self.assertTrue(np.allclose(result.predicted, self.target))
+        self.assertLess(result.rms, 1e-10)
+        self.assertTrue(np.allclose(result.translation, [556.4187677, -135.1671835]))
+
+    def test_two_pair_reflection_allowed_procrustes(self):
+        from gem.landmarks import similarity_procrustes
+
+        result = similarity_procrustes(self.source, self.target, allow_reflection=True)
+        self.assertAlmostEqual(result.determinant, -1.0)
+        self.assertTrue(np.allclose(result.predicted, self.target))
+        self.assertLess(result.rms, 1e-10)
+        self.assertTrue(np.allclose(result.translation, [-213.72447081, 571.92339221]))
+
+    def test_two_pair_affine_is_explicitly_underdetermined(self):
+        from gem.landmarks import affine_design, affine_procrustes
+
+        design, _ = affine_design(self.source, self.target)
+        self.assertEqual(np.linalg.matrix_rank(design), 4)
+        with self.assertRaisesRegex(ValueError, "three non-collinear"):
+            affine_procrustes(self.source, self.target)
+
+    def test_three_pair_affine_recovers_transform(self):
+        from gem.landmarks import affine_procrustes
+
+        source = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]])
+        matrix = np.array([[2.0, 0.5], [-1.0, 1.5]])
+        translation = np.array([3.0, -2.0])
+        target = (matrix @ source.T).T + translation
+        result = affine_procrustes(source, target)
+        self.assertTrue(result.unique)
+        self.assertEqual(result.rank, 6)
+        self.assertTrue(np.allclose(result.matrix, matrix))
+        self.assertTrue(np.allclose(result.translation, translation))
+        self.assertLess(result.rms, 1e-12)
 
 
 class AgentCase(unittest.TestCase):

@@ -12,7 +12,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $source = $PSScriptRoot
-$wheel = Join-Path $source "graphics_environment_manager-0.2.0-py3-none-any.whl"
+$wheel = Join-Path $source "graphics_environment_manager-0.3.0-py3-none-any.whl"
 $vendor = Join-Path $source "vendor"
 $icon = Join-Path $source "ablation-gem.ico"
 if (-not (Test-Path $wheel) -or -not (Test-Path $vendor) -or -not (Test-Path $icon)) {
@@ -25,7 +25,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Unable to create the virtual environment." }
     $venvPython = Join-Path $source ".venv\Scripts\python.exe"
     $venvPythonw = Join-Path $source ".venv\Scripts\pythonw.exe"
-    & $venvPython -m pip install --no-index --find-links $vendor $wheel
+    $wheelRequirement = "$wheel[predict]"
+    & $venvPython -m pip install --no-index --find-links $vendor $wheelRequirement
     if ($LASTEXITCODE -ne 0) { throw "GEM installation failed." }
     & $venvPython -m gem --help | Out-Null
     if (-not (Test-Path $venvPythonw)) { throw "The virtual environment has no pythonw.exe launcher." }

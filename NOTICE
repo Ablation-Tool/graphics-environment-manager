@@ -26,10 +26,20 @@ https://github.com/Ablation-Tool/ablation
 This standalone repository contains that master's actual native workbench,
 including its GTK and Tk interfaces, METRIX terminal components, charts,
 Spatial IR, VDI support, preferences, session protocol, installers, and stress
-suites. It is not an independently redesigned interface. Standalone changes are
-limited to packaging, version metadata, documentation, the supplied PNG/ICO/ICNS
-window and desktop-installer icons, and the matching icon-test expectations.
-The in-app Ablation branding is retained.
+suites. It is not an independently redesigned interface. The standalone
+packaging, version metadata, documentation, and supplied PNG/ICO/ICNS window
+and desktop-installer icons are retained, and optional local-model prediction
+and advisory capabilities are added.
+
+Accessible-volume research, the equation, experiments, and paper are solely the
+work of Nicholas Michael Kloster. The equation was created on March 6, 2026.
+Canonical research and measurement harness:
+https://github.com/Ablation-Tool/next-token-predictability
+
+The prediction integration adapts that harness for live Lab selections. The
+advisory and equation-tournament layers are experimental deterministic
+heuristics and sensitivity instruments, not correctness, safety, authorization,
+or autonomous-execution systems.
 
 The original Ablation project is distributed under GPL-3.0-or-later. This
 standalone distribution retains that license; see LICENSE.

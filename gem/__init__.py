@@ -3,4 +3,4 @@
 from .model import Scene, demo_scene, scene_from_events
 
 __all__ = ["Scene", "demo_scene", "scene_from_events"]
-__version__ = "0.2.0"
+__version__ = "0.3.0"

@@ -1174,6 +1174,9 @@ class InvestigationWorkspace(Gtk.Box):
         self.rescan_future = None
         self.rescan_cancel = threading.Event()
         self.rescan_poll_id = 0
+        self.prediction_future = None
+        self.prediction_poll_id = 0
+        self.prediction_predictor = None
         self.layout = None
         configure_environment(session)
         self.build_ui()
@@ -1184,7 +1187,7 @@ class InvestigationWorkspace(Gtk.Box):
 
     def show_all(self):
         super().show_all()
-        if self.rescan_future is None or self.rescan_future.done():
+        if (self.rescan_future is None or self.rescan_future.done()) and (self.prediction_future is None or self.prediction_future.done()):
             self.progress.hide()
             self.cancel_button.hide()
 
@@ -1410,6 +1413,9 @@ class InvestigationWorkspace(Gtk.Box):
         self.node_overflow.set_halign(Gtk.Align.END)
         node_menu = Gtk.Menu()
         for label, callback in (
+            ("Measure next-token accessible volume", self.measure_accessible_volume),
+            ("Advise on next action", self.advise_next_action),
+            ("Run equation tournament", self.run_equation_tournament),
             ("Copy follow-up note", self.copy_follow_up),
             ("Show in file manager", self.show_in_files),
         ):
@@ -2054,8 +2060,61 @@ class InvestigationWorkspace(Gtk.Box):
         else:
             self.counts.set_text(f"Show in file manager: {path}")
 
+    def measure_accessible_volume(self, steering=False, tournament=False):
+        if self.selected_event is None:
+            return
+        if self.prediction_future and not self.prediction_future.done():
+            return
+        if self.rescan_future and not self.rescan_future.done():
+            self.counts.set_text("Wait for the directory rescan before measuring")
+            return
+        self.progress.show()
+        self.cancel_button.hide()
+        host = GemLabHost(self.session)
+        if tournament:
+            self.counts.set_text("Running equation tournament…")
+            operation = host.run_equation_tournament
+        else:
+            self.counts.set_text("Advising on the next action…" if steering else "Measuring next-token accessible volume…")
+            operation = host.advise_next_action if steering else host.measure_prediction
+        self.prediction_future = self.executor.submit(
+            operation,
+            predictor=self.prediction_predictor,
+        )
+        self.prediction_poll_id = GLib.timeout_add(100, self.poll_prediction)
+
+    def advise_next_action(self):
+        self.measure_accessible_volume(steering=True)
+
+    def run_equation_tournament(self):
+        self.measure_accessible_volume(tournament=True)
+
+    def poll_prediction(self):
+        if self.closed:
+            return GLib.SOURCE_REMOVE
+        if not self.prediction_future.done():
+            self.progress.pulse()
+            return GLib.SOURCE_CONTINUE
+        future = self.prediction_future
+        self.prediction_future = None
+        self.prediction_poll_id = 0
+        self.progress.hide()
+        try:
+            result = future.result()
+        except Exception as error:
+            self.counts.set_text(f"Prediction failed: {error}")
+            self.counts.set_tooltip_text(str(error))
+        else:
+            self.reload()
+            self.select_node(result.evidence["id"])
+            self.counts.set_text(f"{result.evidence['label']} · evidence recorded")
+            self.counts.set_tooltip_text(result.evidence["scope"])
+        return GLib.SOURCE_REMOVE
+
     def start_rescan(self):
         if self.session.target_kind != "directory" or (self.rescan_future and not self.rescan_future.done()):
+            return
+        if self.prediction_future and not self.prediction_future.done():
             return
         self.rescan_cancel.clear()
         self.rescan_button.set_sensitive(False)
@@ -2280,6 +2339,11 @@ class InvestigationWorkspace(Gtk.Box):
             if self.rescan_poll_id:
                 GLib.source_remove(self.rescan_poll_id)
                 self.rescan_poll_id = 0
+            if self.prediction_future:
+                self.prediction_future.cancel()
+            if self.prediction_poll_id:
+                GLib.source_remove(self.prediction_poll_id)
+                self.prediction_poll_id = 0
             self.executor.shutdown(wait=False, cancel_futures=True)
             self.stop_agent()
         if wait and not wait_for_agents([self]):

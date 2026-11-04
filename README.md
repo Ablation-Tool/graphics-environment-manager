@@ -23,7 +23,7 @@ On Linux, the default interface is the same native **GTK3/VTE workbench** used b
 
 Use the repository as a build template for any project that needs a native dashboard beside its own AI agent. Select a directory, connect your existing agent CLI, and adapt the shared event model and domain tools to your workflow. The application does not supply a model, credentials, or a simulated chatbot, and launching the interface does not require installing Ablation's analysis engine.
 
-Standalone changes are limited to packaging, version metadata, documentation, the supplied PNG/ICO/ICNS application icons, and the matching icon-test expectations. The canonical interface remains Ablation's master implementation.
+The standalone distribution preserves Ablation's master interface and adds optional local-model measurement and advisory capabilities from the [next-token-predictability research](https://github.com/Ablation-Tool/next-token-predictability). Standalone packaging, version metadata, documentation, and supplied PNG/ICO/ICNS application icons are also included.
 
 </details>
 
@@ -62,6 +62,8 @@ They are examples of the broader approach, not dependencies of this standalone r
 <summary><strong>Dependencies and installation</strong></summary>
 
 Requirements: **Python 3.10+ with Tkinter**. The standard `python -m pip install -e .` installs `pyte`, `tkinterdnd2`, and `pywinpty` on native Windows. Linux's preferred GTK/VTE interface also uses system GTK and Cairo packages.
+
+For local next-token measurement and advisory steering, install the additional runtime with `python -m pip install -e '.[predict]'`. This adds NumPy, ONNX Runtime, Tokenizers, and Hugging Face Hub. Offline platform packages include these Python dependencies; the public model is downloaded separately and verified against the canonical model and tokenizer hashes before inference.
 
 ### Windows
 
@@ -181,12 +183,91 @@ SVG and VDI use the Python standard library. PNG and native graphical views requ
 </details>
 
 <details>
+<summary><strong>Accessible volume, steering, and equation tournaments</strong></summary>
+
+The optional prediction integration applies the [accessible-volume equation](https://github.com/Ablation-Tool/next-token-predictability) to a real local model distribution using the current Lab selection, recent events, and selected evidence:
+
+\[
+A_\tau(S)=\sum_{a\in O}\mathbf{1}[P(a\mid h_T(S))>\tau]
+\]
+
+It measures the local **distilgpt2-ONNX** model's next-token breadth for that context. It does **not** measure Kimi, Claude, Codex, Ablation's semantic encoders, human judgment, or a distribution over complete actions.
+
+The organization follows the master's virtual-device model:
+
+```text
+Human + AI agent
+    ↓ control / input
+Lab host: selected object + context + revision
+    ↓
+Local ONNX provider: a virtual prediction device
+    ↓ full probability distribution
+Measurement engine
+    ├─ context, input IDs, probabilities, and JSON reports
+    ├─ scoped measurement evidence in the Lab
+    └─ read-only advisories and tournaments for the human/agent
+    ↓
+Existing action gate, deterministic verification, and human judgment
+```
+
+Install the prediction dependencies:
+
+```bash
+python -m pip install -e '.[predict]'
+```
+
+The first inference downloads the public model and verifies the canonical model and tokenizer SHA-256 values. Later runs reuse the local model cache.
+
+Measure the selected context:
+
+```bash
+gem predict --session /path/to/project-session
+```
+
+Each run preserves `context.txt`, `probabilities.npz`, and `accessible-volume.json`, verifies the saved distribution and threshold sweep, and emits a scoped evidence node. If the selection or revision changes during inference, the artifacts remain but no evidence is attached to the stale node.
+
+Generate a next-action advisory:
+
+```bash
+gem steer --session /path/to/project-session
+```
+
+The deterministic heuristic has three modes:
+
+- **Gather evidence** — stay read-only and gather more evidence.
+- **Review with a human** — compare alternatives and request human review.
+- **Propose with verification** — allow a proposal to proceed only to deterministic verification.
+
+The latest advisory is compared with the previous measurement for the same model and selected item. Large volume or entropy changes can increase caution by one level. Low breadth never unlocks execution, and no mode grants autonomous execution or permission escalation.
+
+Attack the fixed and adaptive equations without changing policy:
+
+```bash
+gem tournament --session /path/to/project-session
+```
+
+The tournament compares the fixed equation with
+
+\[
+A_{\alpha,\beta}(x)=\sum_i\mathbf{1}\left[p_i>\max(\beta,\alpha p_{\max}(x))\right]
+\]
+
+It evaluates twelve adaptive parameter pairs on the baseline distribution and three context attacks: removed evidence, repeated evidence, and irrelevant context. It records count disagreements and advisory flips in `tournament.json`. A flip demonstrates sensitivity, not that either rule is correct or better. Verified task outcomes are required to rank equations or policies.
+
+The GTK node menu includes **Measure next-token accessible volume**, **Advise on next action**, and **Run equation tournament**. The same host and CLI paths work across Windows, macOS, and Linux. The master Tk interface can use those CLI paths directly.
+
+</details>
+
+<details>
 <summary><strong>Canonical sources and validation</strong></summary>
 
 - `gem/gtk_app.py` — the actual native Linux workbench.
 - `gem/app.py` and `metrix/desktop.py` — the master's Tk and embedded-terminal implementation.
 - `gem/events.py` — authoritative sessions, selections, and append-only events.
 - `gem/model.py`, `gem/geometry.py`, `gem/runner.py`, and `gem/vdi.py` — graphical execution, verification, and replay.
+- `gem/prediction.py` — live context construction, ONNX inference, accessible volume, and evidence artifacts.
+- `gem/steering.py` — deterministic advisories, modes, and same-context trends.
+- `gem/tournament.py` — fixed/adaptive comparisons and context attacks.
 - `stress/` — the master's core, native, desktop-input, installer, and platform validation suites.
 - `packaging/` — native Linux, Windows, and macOS packaging sources.
 
@@ -196,6 +277,8 @@ Run the core validation from the repository root:
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
+python stress/gem_stress.py PredictionCase
+python stress/gtk_stress.py GtkCase.test_prediction_updates_visible_lab
 ```
 
 For repeated GUI testing, use `stress/nested_x11.sh` instead of opening test windows on the live desktop. Windows and macOS still require their native validation environments.

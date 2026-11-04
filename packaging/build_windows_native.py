@@ -7,7 +7,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist" / "windows-native"
-WHEEL_NAME = "graphics_environment_manager-0.2.0-py3-none-any.whl"
+WHEEL_NAME = "graphics_environment_manager-0.3.0-py3-none-any.whl"
 
 
 def main():
@@ -21,6 +21,7 @@ def main():
         "--platform", "win_amd64", "--python-version", "311",
         "--implementation", "cp", "--abi", "cp311",
         "--dest", str(vendor), "pyte>=0.8.1,<1", "wcwidth==0.2.14", "pywinpty>=2,<3", "tkinterdnd2==0.7.0",
+        "numpy>=2.3.5,<3", "onnxruntime>=1.31.1,<2", "tokenizers>=0.23.3,<1", "huggingface-hub>=1.33.0,<2",
     ], check=True)
     for name in ("Install-WindowsNative.ps1", "README.md"):
         shutil.copy(ROOT / "packaging" / name, DIST / name)

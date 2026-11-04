@@ -7,7 +7,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist" / "macos"
-WHEEL_NAME = "graphics_environment_manager-0.2.0-py3-none-any.whl"
+WHEEL_NAME = "graphics_environment_manager-0.3.0-py3-none-any.whl"
 
 
 def main():
@@ -19,6 +19,7 @@ def main():
     subprocess.run([
         sys.executable, "-m", "pip", "download", "--only-binary=:all:",
         "--dest", str(vendor), "pyte>=0.8.1,<1", "wcwidth==0.2.14", "tkinterdnd2==0.7.0",
+        "numpy>=2.3.5,<3", "onnxruntime>=1.31.1,<2", "tokenizers>=0.23.3,<1", "huggingface-hub>=1.33.0,<2",
     ], check=True)
     for name in ("install_macos.sh", "create_macos_app.py", "README.md"):
         shutil.copy(ROOT / "packaging" / name, DIST / name)

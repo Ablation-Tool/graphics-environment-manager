@@ -12,7 +12,7 @@ fi
 cd "$SOURCE"
 "$PYTHON" -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-index --find-links "$SOURCE/vendor" "$SOURCE/graphics_environment_manager-0.2.0-py3-none-any.whl"
+python -m pip install --no-index --find-links "$SOURCE/vendor" "$SOURCE/graphics_environment_manager-0.3.0-py3-none-any.whl[predict]"
 python -m gem --help >/dev/null
 python "$SOURCE/create_macos_app.py" "$SOURCE"
 

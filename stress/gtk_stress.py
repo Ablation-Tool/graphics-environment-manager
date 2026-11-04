@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import importlib.util
 import itertools
 import json
 import os
@@ -681,6 +682,59 @@ with tempfile.TemporaryDirectory(prefix="gem-tab-churn-") as temporary:
         self.assertNotIn(b"\r", payload)
         self.assertNotIn(b"\n", payload)
 
+    @unittest.skipUnless(importlib.util.find_spec("numpy"), "native prediction test requires NumPy")
+    def test_prediction_updates_visible_lab(self):
+        import numpy as np
+        from gem.prediction import ModelPrediction
+
+        probabilities = np.array([0.40, 0.20, 0.12, 0.06, 0.04] + [0.02] * 9)
+
+        class Predictor:
+            model = {"id": "fixture-model", "runtime": "fixture"}
+            context_truncated = False
+
+            def predict(self, _prompt):
+                return ModelPrediction(np.array([1, 2, 3]), probabilities, self.model, False)
+
+        self.close_current()
+        self.make_app(target=self.corpus)
+        package = next(event for event in self.window.session.events() if event["label"] == "firmware.bin")
+        self.window.select_node(package["id"])
+        self.window.prediction_predictor = Predictor()
+        self.window.measure_accessible_volume()
+        self.wait_for(
+            lambda: any(id.startswith("evidence:accessible-volume:") for id in self.window.node_iters),
+            "prediction evidence did not appear in the visible Lab",
+        )
+        evidence_id = next(id for id in self.window.node_iters if id.startswith("evidence:accessible-volume:"))
+        row = self.window.store[self.window.node_iters[evidence_id]]
+        self.assertIn("Next-token breadth", row[0])
+        self.assertEqual(row[1], "Evidence")
+        self.assertEqual(row[2], "Complete (scoped)")
+        self.assertEqual(self.window.session.current_state()["selected_id"], evidence_id)
+        evidence = self.window.session.events_by_id()[evidence_id]
+        self.assertTrue((self.window.session.root / evidence["evidence"]).is_file())
+        self.window.advise_next_action()
+        self.wait_for(
+            lambda: any(id.startswith("observation:advisory:") for id in self.window.node_iters),
+            "advisory did not appear in the visible Lab",
+        )
+        advisory_id = next(id for id in self.window.node_iters if id.startswith("observation:advisory:"))
+        advisory_row = self.window.store[self.window.node_iters[advisory_id]]
+        self.assertEqual(advisory_row[0], "Advisory · Gather evidence")
+        self.assertEqual(advisory_row[2], "Complete (scoped)")
+        self.assertEqual(self.window.session.current_state()["selected_id"], advisory_id)
+        self.window.run_equation_tournament()
+        self.wait_for(
+            lambda: any(id.startswith("observation:equation-tournament:") for id in self.window.node_iters),
+            "equation tournament did not appear in the visible Lab",
+        )
+        tournament_id = next(id for id in self.window.node_iters if id.startswith("observation:equation-tournament:"))
+        tournament_row = self.window.store[self.window.node_iters[tournament_id]]
+        self.assertIn("Equation tournament", tournament_row[0])
+        self.assertEqual(tournament_row[2], "Complete (scoped)")
+        self.assertEqual(self.window.session.current_state()["selected_id"], tournament_id)
+
     def test_agent_reads_selection_and_updates_visible_status(self):
         self.close_current()
         self.make_app(target=self.corpus, command=[os.sys.executable, "-u", "-c", GTK_FIXTURE])
@@ -826,7 +880,10 @@ with tempfile.TemporaryDirectory(prefix="gem-tab-churn-") as temporary:
         self.assertTrue(workspace.open_cli_button.get_style_context().has_class("suggested-action"))
         self.assertEqual(
             [item.get_label() for item in workspace.node_overflow.get_popup().get_children()],
-            ["Copy follow-up note", "Show in file manager"],
+            [
+                "Measure next-token accessible volume", "Advise on next action",
+                "Run equation tournament", "Copy follow-up note", "Show in file manager",
+            ],
         )
         self.assertEqual(workspace.star_button.get_accessible().get_name(), "Star selected node")
 

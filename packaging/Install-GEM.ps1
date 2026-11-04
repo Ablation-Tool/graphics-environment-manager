@@ -31,7 +31,7 @@ fi
 cd "$HOME/graphics-environment-manager"
 python3 -m venv --system-site-packages .venv
 . .venv/bin/activate
-python -m pip install --no-index --find-links "$GEM_SOURCE/vendor" "$GEM_SOURCE/graphics_environment_manager-0.2.0-py3-none-any.whl"
+python -m pip install --no-index --find-links "$GEM_SOURCE/vendor" "$GEM_SOURCE/graphics_environment_manager-0.3.0-py3-none-any.whl[predict]"
 gem --help >/dev/null
 python -m metrix --help >/dev/null
 '@

@@ -425,6 +425,186 @@ class EnvironmentCase(unittest.TestCase):
         ])
 
 
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "prediction tests require NumPy")
+class PredictionCase(unittest.TestCase):
+    def test_reference_distribution_and_strict_threshold(self):
+        from gem.prediction import check_reference_distribution, measure_probabilities
+
+        self.assertTrue(check_reference_distribution())
+        report = measure_probabilities([0.05, 0.95], thresholds=(0.05,))
+        self.assertEqual(report["threshold_sweep"][0]["accessible_volume"], 1)
+        self.assertEqual(report["threshold_sweep"][0]["normalized_accessible_volume"], 0.5)
+
+    def test_measurement_records_evidence_and_replays_artifacts(self):
+        import numpy as np
+        from gem.prediction import ModelPrediction
+
+        probabilities = np.array([0.40, 0.20, 0.12, 0.06, 0.04] + [0.02] * 9)
+
+        class Predictor:
+            model = {"id": "fixture-model", "runtime": "fixture"}
+            context_truncated = False
+
+            def predict(self, prompt):
+                self.prompt = prompt
+                return ModelPrediction(np.array([1, 2, 3]), probabilities, self.model, False)
+
+            def decode(self, token_id):
+                return f"token:{token_id}"
+
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            predictor = Predictor()
+            result = GemLabHost(session).measure_prediction(predictor=predictor)
+            self.assertIn(session.root_id, predictor.prompt)
+            self.assertEqual(
+                [item["accessible_volume"] for item in result.report["threshold_sweep"]],
+                [5, 4, 3, 2, 1, 0],
+            )
+            self.assertEqual(result.evidence["type"], "evidence")
+            self.assertEqual(result.evidence["status"], "complete_scoped")
+            self.assertEqual(result.evidence["parent_id"], session.root_id)
+            self.assertEqual(result.report["measurement_event_id"], result.evidence["id"])
+            self.assertEqual(result.report["top_tokens"][0]["token"], "token:0")
+            with np.load(result.path / "probabilities.npz") as artifact:
+                self.assertTrue(np.array_equal(artifact["probabilities"], probabilities))
+            self.assertTrue((result.path / "context.txt").is_file())
+            self.assertTrue((result.path / "accessible-volume.json").is_file())
+
+    def test_selection_change_during_measurement_does_not_attach_to_stale_node(self):
+        import numpy as np
+        from gem.prediction import ModelPrediction
+
+        probabilities = np.array([0.40, 0.20, 0.12, 0.06, 0.04] + [0.02] * 9)
+
+        class Predictor:
+            model = {"id": "fixture-model", "runtime": "fixture"}
+            context_truncated = False
+
+            def __init__(self, session):
+                self.session = session
+
+            def predict(self, _prompt):
+                self.session.select("artifact:child")
+                return ModelPrediction(np.array([1, 2, 3]), probabilities, self.model, False)
+
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            session.emit("artifact:child", session.root_id, "artifact", "child")
+            predictor = Predictor(session)
+            with self.assertRaisesRegex(ValueError, "selection changed"):
+                GemLabHost(session).measure_prediction(predictor=predictor)
+            self.assertFalse(any(
+                event["id"].startswith("evidence:accessible-volume:")
+                for event in session.events()
+            ))
+            runs = list((session.root / "prediction-runs").iterdir())
+            self.assertEqual(len(runs), 1)
+            self.assertTrue((runs[0] / "accessible-volume.json").is_file())
+
+    def test_advisory_modes_and_trend_escalation(self):
+        from gem.steering import evaluate_advisory
+
+        def report(a002, a005, entropy):
+            return {
+                "model": {"id": "fixture-model"},
+                "gem_context": {"selected_id": "artifact:root", "revision": 1},
+                "threshold_sweep": [
+                    {"tau": 0.02, "accessible_volume": a002},
+                    {"tau": 0.05, "accessible_volume": a005},
+                ],
+                "entropy_bits": entropy,
+                "max_probability": 0.8,
+                "top_10_probability_mass": 0.95,
+            }
+
+        self.assertEqual(evaluate_advisory(report(1, 1, 4.0))["mode"], "propose_with_verification")
+        self.assertEqual(evaluate_advisory(report(2, 2, 5.0))["mode"], "review_with_human")
+        self.assertEqual(evaluate_advisory(report(8, 1, 4.0))["mode"], "gather_evidence")
+        previous = evaluate_advisory(report(5, 5, 4.0))
+        changed = evaluate_advisory(report(1, 1, 4.0), previous)
+        self.assertEqual(changed["mode"], "review_with_human")
+        self.assertTrue(changed["trend"]["escalated"])
+        self.assertEqual(changed["trend"]["accessible_volume_005_delta"], -4)
+        self.assertIn("autonomous execution", changed["prohibited_actions"])
+
+    def test_advice_session_records_recommendation_and_history(self):
+        import numpy as np
+        from gem.prediction import ModelPrediction
+        from gem.steering import latest_advisory
+
+        class Predictor:
+            model = {"id": "fixture-model", "runtime": "fixture"}
+            context_truncated = False
+
+            def predict(self, _prompt):
+                return ModelPrediction(
+                    np.array([1, 2, 3]), np.array([0.97, 0.01, 0.01, 0.01]),
+                    self.model, False,
+                )
+
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            predictor = Predictor()
+            first = GemLabHost(session).advise_next_action(predictor=predictor)
+            advisory = first.report["advisory"]
+            self.assertEqual(advisory["mode"], "propose_with_verification")
+            self.assertEqual(advisory["trend"]["status"], "no previous measurement")
+            self.assertEqual(first.evidence["parent_id"], advisory["measurement_event_id"])
+            self.assertTrue((first.path / "advisory.json").is_file())
+            self.assertEqual(latest_advisory(session)["advisory_event_id"], first.evidence["id"])
+            second = GemLabHost(session).advise_next_action(predictor=predictor)
+            self.assertEqual(second.report["advisory"]["trend"]["status"], "compared with previous measurement")
+            self.assertEqual(second.report["advisory"]["trend"]["accessible_volume_005_delta"], 0)
+
+    def test_adaptive_equation_uses_max_relative_and_absolute_cutoff(self):
+        from gem.tournament import adaptive_accessible_volume
+
+        probabilities = [0.60, 0.20, 0.10, 0.05, 0.05]
+        self.assertEqual(adaptive_accessible_volume(probabilities, 0.5, 0.02)["accessible_volume"], 1)
+        self.assertEqual(adaptive_accessible_volume(probabilities, 0.01, 0.02)["accessible_volume"], 5)
+        self.assertEqual(adaptive_accessible_volume(probabilities, 0.5, 0.5)["accessible_volume"], 1)
+
+    def test_tournament_attacks_equations_and_context(self):
+        import numpy as np
+        from gem.prediction import ModelPrediction
+        from gem.steering import latest_advisory
+
+        probabilities = np.array([0.40, 0.20, 0.12, 0.06, 0.04] + [0.02] * 9)
+
+        class Predictor:
+            model = {"id": "fixture-model", "runtime": "fixture"}
+            context_truncated = False
+
+            def __init__(self):
+                self.prompts = []
+
+            def predict(self, prompt):
+                self.prompts.append(prompt)
+                return ModelPrediction(np.array([1, 2, 3]), probabilities, self.model, False)
+
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            predictor = Predictor()
+            result = GemLabHost(session).run_equation_tournament(predictor=predictor)
+            tournament = result.report["tournament"]
+            self.assertEqual(
+                [variant["name"] for variant in tournament["variants"]],
+                ["baseline", "evidence_removed", "repeated_evidence", "irrelevant_context"],
+            )
+            self.assertEqual(len(predictor.prompts), 4)
+            self.assertIn("removed for equation tournament", predictor.prompts[1])
+            self.assertIn("repeated three times for equation tournament", predictor.prompts[2])
+            self.assertIn("irrelevant context prepended", predictor.prompts[3])
+            self.assertGreater(tournament["advisory_flip_count"], 0)
+            self.assertTrue(all(len(variant["adaptive_candidates"]) == 12 for variant in tournament["variants"]))
+            self.assertTrue((result.path / "tournament.json").is_file())
+            for attack in ("evidence_removed", "repeated_evidence", "irrelevant_context"):
+                self.assertTrue((result.path / f"probabilities-{attack}.npz").is_file())
+            self.assertEqual(tournament["tournament_event_id"], result.evidence["id"])
+            self.assertIsNone(latest_advisory(session))
+
+
 class AgentCase(unittest.TestCase):
     def fake_agent(self, directory):
         path = Path(directory) / "fake_agent.py"

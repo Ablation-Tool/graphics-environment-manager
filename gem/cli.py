@@ -62,6 +62,24 @@ def _parser():
     state = commands.add_parser("lab-state", help="inspect unified investigation and derived spatial objects")
     state.add_argument("--session", required=True, help="investigation session directory")
 
+    predict = commands.add_parser("predict", help="measure next-token accessible volume for the selected Lab context")
+    predict.add_argument("--session", required=True, help="investigation session directory")
+    predict.add_argument("--model-dir", help="local distilgpt2 model cache (default: per-user GEM data directory)")
+    predict.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    predict.add_argument("--json", action="store_true", help="print the complete measurement report")
+
+    steer = commands.add_parser("steer", help="recommend a cautious next action from the current prediction and its trend")
+    steer.add_argument("--session", required=True, help="investigation session directory")
+    steer.add_argument("--model-dir", help="local distilgpt2 model cache (default: per-user GEM data directory)")
+    steer.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    steer.add_argument("--json", action="store_true", help="print the complete measurement and advisory report")
+
+    tournament = commands.add_parser("tournament", help="attack fixed and adaptive equations plus context variants without changing policy")
+    tournament.add_argument("--session", required=True, help="investigation session directory")
+    tournament.add_argument("--model-dir", help="local distilgpt2 model cache (default: per-user GEM data directory)")
+    tournament.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    tournament.add_argument("--json", action="store_true", help="print the complete tournament report")
+
     launch = commands.add_parser("launch", help="choose a target and open the Lab inside GEM")
     launch.add_argument("--toolkit", choices=("auto", "gtk", "tk"), default="auto")
     launch_agents = launch.add_mutually_exclusive_group()
@@ -110,6 +128,71 @@ def main(argv=None):
 
             snapshot = GemLabHost(Session(arguments.session)).snapshot()
             print(json.dumps(snapshot, indent=2, ensure_ascii=False, sort_keys=True))
+            return 0
+        if arguments.command == "predict":
+            from gem.events import Session
+            from .host import GemLabHost
+
+            result = GemLabHost(Session(arguments.session)).measure_prediction(
+                model_dir=arguments.model_dir, thresholds=arguments.thresholds,
+            )
+            if arguments.json:
+                print(json.dumps(result.report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                for measurement in result.report["threshold_sweep"]:
+                    print(
+                        f"τ={measurement['tau']:.2f} "
+                        f"A(S)={measurement['accessible_volume']} "
+                        f"normalized={measurement['normalized_accessible_volume']:.8f}"
+                    )
+            if not arguments.json:
+                print(f"Run: {result.path}")
+                print(f"Evidence: {result.evidence['id']}")
+            return 0
+        if arguments.command == "steer":
+            from gem.events import Session
+            from .host import GemLabHost
+
+            result = GemLabHost(Session(arguments.session)).advise_next_action(
+                model_dir=arguments.model_dir, thresholds=arguments.thresholds,
+            )
+            advisory = result.report["advisory"]
+            if arguments.json:
+                print(json.dumps(result.report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                print(f"Advisory: {advisory['label']}")
+                print(advisory["summary"])
+                for reason in advisory["reasons"]:
+                    print(f"Reason: {reason}")
+                print("Allowed action categories: " + ", ".join(advisory["allowed_actions"]))
+                print("Autonomous execution and permission escalation are not authorized.")
+            if not arguments.json:
+                print(f"Run: {result.path}")
+                print(f"Evidence: {result.evidence['id']}")
+            return 0
+        if arguments.command == "tournament":
+            from gem.events import Session
+            from .host import GemLabHost
+
+            result = GemLabHost(Session(arguments.session)).run_equation_tournament(
+                model_dir=arguments.model_dir, thresholds=arguments.thresholds,
+            )
+            tournament = result.report["tournament"]
+            if arguments.json:
+                print(json.dumps(result.report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                print(f"Equation tournament: {tournament['advisory_flip_count']} advisory flips")
+                for variant in tournament["variants"]:
+                    largest = variant["largest_disagreement"]
+                    print(
+                        f"{variant['name']}: fixed={variant['fixed_advisory_mode']} "
+                        f"flips={variant['advisory_flip_count']} "
+                        f"largest A(0.05) delta={largest['fixed_005_delta']} "
+                        f"(alpha={largest['alpha']}, beta={largest['beta']})"
+                    )
+                print("Sensitivity only; no equation winner is inferred without verified outcomes.")
+                print(f"Run: {result.path}")
+                print(f"Evidence: {result.evidence['id']}")
             return 0
         if arguments.command == "lab":
             from gem.lab_cli import main as gem_main

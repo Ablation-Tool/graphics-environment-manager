@@ -1,8 +1,8 @@
 # GEM platform packages
 
-> Canonical master packaging reference. The standalone wheel is named `graphics_environment_manager-0.2.0-py3-none-any.whl`; source installation and current platform prerequisites are documented in [README.md](../README.md).
+> Canonical master packaging reference. The standalone wheel is named `graphics_environment_manager-0.3.0-py3-none-any.whl`; source installation and current platform prerequisites are documented in [README.md](../README.md).
 
-These packages contain the GEM wheel and its Python dependencies for offline Python installation. Python, Tkinter, and optional Linux GTK/VTE system prerequisites are separate. METRIX and the pinned `tkinterdnd2` native drag-and-drop bridge are bundled; no separate checkout, AI model, or API credentials are installed.
+These packages contain the GEM wheel and its Python dependencies for offline Python installation. Python, Tkinter, and optional Linux GTK/VTE system prerequisites are separate. METRIX and the pinned `tkinterdnd2` native drag-and-drop bridge are bundled. Prediction dependencies are included so the `predict` extra can be installed offline; the hash-checked distilgpt2 model is downloaded separately on first use. No separate checkout or API credentials are installed.
 
 ## Universal installer
 

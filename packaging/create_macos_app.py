@@ -71,8 +71,8 @@ def create_app(source):
             "CFBundleExecutable": "GEM",
             "CFBundlePackageType": "APPL",
             "CFBundleIconFile": "GEM.icns",
-            "CFBundleShortVersionString": "0.2.0",
-            "CFBundleVersion": "0.2.0",
+            "CFBundleShortVersionString": "0.3.0",
+            "CFBundleVersion": "0.3.0",
             "LSApplicationCategoryType": "public.app-category.developer-tools",
             "NSHighResolutionCapable": True,
         }

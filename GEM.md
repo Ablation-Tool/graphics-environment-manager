@@ -30,6 +30,8 @@ B_\tau(S)=\sum_{a\in O}\mathbf{1}[P(a\mid S)>\tau]\cdot\mathbf{1}[a\in\operatorn
 
 The operational sequence is `proposal → constrained action gate → deterministic execution → evidence on disk → verification/replay`. This reduces unbounded and uninspectable action; it does not eliminate stochastic variation or prove safety. Accessible volume must not be presented as a correctness, autonomy, or safety score. Current interactive agent CLIs do not expose token probabilities, so GEM does not calculate either score for them. A provider exposing suitable logits and complete structured actions would be required before making such a measurement.
 
+The standalone distribution adds an optional local provider path for the token-level equation. `gem predict` runs hash-checked `distilgpt2-ONNX` inference on the current Lab context, preserves the complete distribution and threshold sweep, and records scoped evidence. `gem steer` adds an inspectable heuristic advisory and trend comparison. These measure the local model only—not the embedded interactive agent or a distribution over complete actions. Advisories can recommend gathering evidence, human review, or verification, but never authorize execution or permission escalation. `gem tournament` compares fixed and adaptive equations on identical distributions and attacked contexts, recording advisory flips without inferring an equation winner.
+
 ## Environment and hosted Lab
 
 GEM is the outer environment; GEM Lab is its investigation application. The migration preserves the existing native shell while moving shared operations behind `GemLabHost` and `GemCommandBroker` rather than performing a big-bang rewrite.

@@ -155,6 +155,31 @@ class GemLabHost:
             raise ValueError("No investigation nodes are available for GEM export")
         return self.export_scene(scene, parent_id)
 
+    def measure_prediction(self, model_dir=None, thresholds=None, predictor=None):
+        from .prediction import THRESHOLDS, measure_session
+
+        return measure_session(
+            self.session, model_dir=model_dir,
+            thresholds=THRESHOLDS if thresholds is None else thresholds,
+            predictor=predictor,
+        )
+
+    def advise_next_action(self, model_dir=None, thresholds=None, predictor=None):
+        from .steering import advise_session
+
+        return advise_session(
+            self.session, model_dir=model_dir,
+            thresholds=thresholds, predictor=predictor,
+        )
+
+    def run_equation_tournament(self, model_dir=None, thresholds=None, predictor=None):
+        from .tournament import run_tournament
+
+        return run_tournament(
+            self.session, model_dir=model_dir,
+            thresholds=thresholds, predictor=predictor,
+        )
+
 
 class GemCommandBroker:
     COMMANDS = {"snapshot", "resolve", "select", "begin_selected_work", "export"}

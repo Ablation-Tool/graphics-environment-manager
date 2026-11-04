@@ -4,7 +4,20 @@ A standalone native dashboard and agent environment for **your project + your AI
 
 This is GEM's own application repository, not an Ablation submodule, add-on, or subdirectory. Derived from the Ablation GEM workbench, it pairs a reusable live project dashboard with the interactive agent CLI you already use. It does not require Ablation and does not include a model, API keys, or a simulated chatbot.
 
-## What you get
+## Origin and naming
+
+**GEM did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.
+
+This is a separate, modern application derived from the Ablation GEM workbench. It is **not** the original Digital Research GEM desktop, an emulator for it, or a continuation of its source code. No original Digital Research GEM source code is included here, and no affiliation with or endorsement by Digital Research or the Kildall family is implied.
+
+Historical references:
+
+- [GEM (desktop environment)](https://en.wikipedia.org/wiki/GEM_(desktop_environment)) — the original operating environment, its history, VDI, AES, and desktop.
+- [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) — Digital Research co-founder and the person who oversaw GEM's creation.
+- [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) — microcomputer industry pioneer and Digital Research co-founder.
+
+<details>
+<summary><strong>What you get</strong></summary>
 
 - A native split workbench: project items on the left, a real agent terminal on the right.
 - Milestones, tasks, and notes defined in a small `gem.json` file.
@@ -14,7 +27,10 @@ This is GEM's own application repository, not an Ablation submodule, add-on, or 
 - Kimi, Claude, Codex, or any other interactive CLI through `--agent-command`.
 - A dashboard that remains useful with no agent installed or configured.
 
-## Quick start
+</details>
+
+<details>
+<summary><strong>Quick start</strong></summary>
 
 Requirements: Python 3.10+ with Tkinter. Linux, macOS, and Windows are supported by the implementation; Linux uses a POSIX terminal and native Windows uses ConPTY through `pywinpty`.
 
@@ -43,7 +59,10 @@ python -m pip install -e ".[drop]"
 
 Dropped paths are quoted and inserted without pressing Enter, so you review the command before running it.
 
-## Use another agent
+</details>
+
+<details>
+<summary><strong>Use another agent</strong></summary>
 
 ```bash
 gem open . --agent claude
@@ -55,7 +74,10 @@ gem open . --no-agent
 
 With no explicit option, GEM looks for `kimi`, `claude`, then `codex`. It never silently substitutes a model or provider. Authentication, tool permissions, provider policy, and agent behavior stay under your chosen CLI's control.
 
-## Make it yours
+</details>
+
+<details>
+<summary><strong>Make it yours</strong></summary>
 
 Edit `gem.json` before running `gem init`, or replace the generated file in a new project:
 
@@ -100,7 +122,10 @@ Types are `project`, `milestone`, `task`, and `note`. Statuses are `not_started`
 
 The dashboard layout and reusable behavior live in `gem/app.py`. The terminal bridge is in `gem/terminal.py`, and the project/event model is in `gem/session.py`.
 
-## Human + agent workflow
+</details>
+
+<details>
+<summary><strong>Human + agent workflow</strong></summary>
 
 1. Select a task in the dashboard.
 2. Click **Open in agent**, or ask the agent to work on the selected item.
@@ -123,7 +148,10 @@ The agent receives these environment variables:
 
 A generated `.gem/AGENTS.md` explains the same protocol to the embedded agent.
 
-## CLI
+</details>
+
+<details>
+<summary><strong>CLI</strong></summary>
 
 ```bash
 gem state --session .gem
@@ -152,7 +180,10 @@ Inside the embedded terminal, `--session "$GEM_SESSION"` and the session-local `
 
 `gem begin` is a compare-and-commit operation: if the human changes the selection or its revision first, the command fails and the agent must read the latest state. It does not lock project files or prevent the human from continuing to use the dashboard.
 
-## Session files
+</details>
+
+<details>
+<summary><strong>Session files</strong></summary>
 
 ```text
 my-project/
@@ -167,22 +198,18 @@ my-project/
 
 Keep `.gem/` out of version control if it is personal working state, or commit it deliberately if your team wants shared dashboard history. The supplied `.gitignore` excludes it.
 
-## Scope
+</details>
+
+<details>
+<summary><strong>Scope</strong></summary>
 
 GEM supplies the environment and integration, not intelligence or domain-specific tools. Your agent does the work; your configuration defines the dashboard. This first template deliberately leaves out Ablation's reverse-engineering engine, Spatial IR, VDI renderer, and investigation-specific statuses.
 
-## Origin and naming
+</details>
 
-**GEM did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.
-
-This is a separate, modern application derived from the Ablation GEM workbench. It is **not** the original Digital Research GEM desktop, an emulator for it, or a continuation of its source code. No original Digital Research GEM source code is included here, and no affiliation with or endorsement by Digital Research or the Kildall family is implied.
-
-Historical references:
-
-- [GEM (desktop environment)](https://en.wikipedia.org/wiki/GEM_(desktop_environment)) — the original operating environment, its history, VDI, AES, and desktop.
-- [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) — Digital Research co-founder and the person who oversaw GEM's creation.
-- [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) — microcomputer industry pioneer and Digital Research co-founder.
-
-## License and attribution
+<details>
+<summary><strong>License and attribution</strong></summary>
 
 The modern code in this repository is GPL-3.0-or-later, matching the Ablation GEM workbench from which it is derived. Historical acknowledgment of the original GEM does not change that license or imply that this repository contains the original desktop's source. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+</details>

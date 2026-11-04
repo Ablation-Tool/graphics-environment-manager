@@ -1,0 +1,17 @@
+Graphics Environment Manager (GEM)
+
+This repository is derived from the GEM native workbench and METRIX terminal
+components in Ablation (https://github.com/Ablation-Tool/ablation), particularly
+gem-lab/gem and gem-lab/metrix. The split dashboard/agent design, append-only
+session protocol, native terminal implementation, and drag-and-drop handling
+were adapted for a standalone, project-neutral template.
+
+The original Ablation project is distributed under GPL-3.0-or-later. This
+derivative repository retains that license; see LICENSE.
+
+The terminal emulator uses pyte (MIT) and optionally tkinterdnd2 (MIT) and
+pywinpty (MIT). Those packages retain their own licenses.
+
+The terminal's named ANSI color arrangements include conventional Tango, Linux
+console, and XTerm colors. No Ablation analysis engine, model, credentials, or
+AI provider code is included.

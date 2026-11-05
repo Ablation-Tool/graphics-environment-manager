@@ -227,13 +227,13 @@ class GemLabHost:
         atomic_write(report_path, json.dumps(report, indent=2, ensure_ascii=False) + "\n")
         return LandmarkRun(exported.run.path, report, evidence, exported, alignment)
 
-    def measure_prediction(self, model_dir=None, thresholds=None, predictor=None):
+    def measure_prediction(self, model_dir=None, thresholds=None, predictor=None, actual_token_id=None):
         from .prediction import THRESHOLDS, measure_session
 
         return measure_session(
             self.session, model_dir=model_dir,
             thresholds=THRESHOLDS if thresholds is None else thresholds,
-            predictor=predictor,
+            predictor=predictor, actual_token_id=actual_token_id,
         )
 
     def advise_next_action(self, model_dir=None, thresholds=None, predictor=None):
@@ -251,6 +251,77 @@ class GemLabHost:
             self.session, model_dir=model_dir,
             thresholds=thresholds, predictor=predictor,
         )
+
+    def review_proposal(self, proposal, measurement, action_id, approve=False):
+        import json
+
+        from .cognition import (
+            CognitiveGuard, CognitiveResult, bind_forecast, response_summary,
+        )
+        from .measurement import document_sha256
+        from .prediction import PredictionRun, _next_run_directory
+
+        broker = GemCommandBroker(self)
+        snapshot = broker.execute({"command": "snapshot"})
+        forecast = bind_forecast(
+            measurement, snapshot, proposal,
+            artifact_path=measurement.get("probability_artifact", ""),
+        )
+        evidence_id = f"evidence:cognition:{action_id}"
+        if evidence_id in self.session.events_by_id():
+            result = CognitiveResult("deny", "duplicate_action_id", False, False, [])
+        else:
+            result = CognitiveGuard(broker, approve=approve).execute(action_id, proposal, forecast)
+        digest = document_sha256({
+            "action_id": action_id, "forecast": forecast,
+            "decision": result.decision, "reason": result.reason,
+        })
+        path = _next_run_directory(self.session.root / "cognition-runs", digest)
+        path.mkdir(parents=True, exist_ok=False)
+        report = {
+            "schema_version": 1,
+            "instrument": "context-bound cognitive action guard",
+            "action_id": action_id,
+            "proposal": proposal,
+            "forecast": forecast,
+            "decision": result.decision,
+            "reason": result.reason,
+            "executed": result.executed,
+            "succeeded": result.succeeded,
+            "approved": bool(approve),
+            "events": result.events,
+            "response": response_summary(result.response) if result.response is not None else None,
+            "run_digest": digest,
+            "scope": [
+                "The guard binds one forecast to the exact target, selection, revision, and proposal.",
+                "Accessible volume does not authorize execution or establish proposal correctness.",
+                "Only snapshot, resolve, begin_selected_work, and export are supported; arbitrary commands are rejected.",
+            ],
+        }
+        report_path = path / "cognition.json"
+        atomic_write(report_path, json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+        if result.succeeded:
+            status = "complete_scoped"
+        elif result.decision == "deny":
+            status = "rejected"
+        elif result.executed:
+            status = "blocked"
+        else:
+            status = "partial"
+        evidence = self.session.emit(
+            evidence_id,
+            snapshot["authoritative"]["selected_id"],
+            "evidence",
+            f"Cognitive guard · {result.decision}",
+            status,
+            "tool",
+            report_path.relative_to(self.session.root).as_posix(),
+            f"Decision: {result.decision}; reason: {result.reason}; executed: {result.executed}; succeeded: {result.succeeded}.",
+            "Forecast-bound proposal review with explicit approval and no arbitrary command path; not a correctness or consciousness claim",
+        )
+        report["evidence_event_id"] = evidence["id"]
+        atomic_write(report_path, json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+        return PredictionRun(path, report, evidence)
 
 
 class GemCommandBroker:

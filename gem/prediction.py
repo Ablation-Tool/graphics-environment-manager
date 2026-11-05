@@ -1,19 +1,21 @@
 from dataclasses import dataclass
 import hashlib
 import json
-import math
 import os
 from pathlib import Path
 import tempfile
 
 from .events import atomic_write
 from .launcher import user_data_root
+from .measurement import (
+    DEFAULT_THRESHOLDS, measure_distribution, normalized_thresholds, validate_probabilities,
+)
 
 
 MODEL_ID = "onnx-community/distilgpt2-ONNX"
 MODEL_SHA256 = "0f79f192f3137e9a90213f1b5d4a52b6d896b735f9cb82160e5de7cc6e539c41"
 TOKENIZER_SHA256 = "a6aa29bf8416d74ad795a73262b1aa3f985564ee338adbee7ffbc5861f78b6b8"
-THRESHOLDS = (0.02, 0.05, 0.10, 0.15, 0.30, 0.50)
+THRESHOLDS = DEFAULT_THRESHOLDS
 MAX_CONTEXT_TOKENS = 1024
 MAX_EVIDENCE_BYTES = 64 * 1024
 
@@ -35,62 +37,20 @@ def _sha256(path):
 
 
 def parse_thresholds(value):
-    if isinstance(value, str):
-        values = [item.strip() for item in value.split(",") if item.strip()]
-    else:
-        values = list(value)
-    if not values or len(values) > 16:
-        raise ValueError("thresholds must contain 1–16 values")
-    try:
-        thresholds = sorted({float(item) for item in values})
-    except (TypeError, ValueError) as error:
-        raise ValueError("thresholds must be finite numbers") from error
-    if any(not math.isfinite(item) or item < 0 or item >= 1 for item in thresholds):
-        raise ValueError("thresholds must be finite numbers in [0, 1)")
-    return tuple(thresholds)
+    return normalized_thresholds(value)
 
 
-def validate_probabilities(probabilities):
-    np = _numpy()
-    values = np.asarray(probabilities, dtype=np.float64)
-    if values.ndim != 1 or not len(values):
-        raise ValueError("probability distribution must be a non-empty one-dimensional vector")
-    if not np.all(np.isfinite(values)):
-        raise ValueError("probability distribution contains non-finite values")
-    if np.any(values < 0):
-        raise ValueError("probability distribution contains negative values")
-    if not np.isclose(values.sum(), 1.0, rtol=0, atol=1e-10):
-        raise ValueError("probability distribution must sum to one")
-    return values
-
-
-def measure_probabilities(probabilities, thresholds=THRESHOLDS, decoder=None):
+def measure_probabilities(probabilities, thresholds=THRESHOLDS, decoder=None, actual_token_id=None):
     np = _numpy()
     values = validate_probabilities(probabilities)
-    thresholds = parse_thresholds(thresholds)
-    sweep = [{
-        "tau": threshold,
-        "accessible_volume": int(np.count_nonzero(values > threshold)),
-        "normalized_accessible_volume": float(np.count_nonzero(values > threshold) / len(values)),
-    } for threshold in thresholds]
+    report = measure_distribution(values, thresholds, actual_token_id=actual_token_id)
     order = np.argsort(-values)
-    top_tokens = []
-    for index in order[:10]:
-        token_id = int(index)
-        top_tokens.append({
-            "token_id": token_id,
-            "token": decoder(token_id) if decoder else str(token_id),
-            "probability": float(values[index]),
-        })
-    return {
-        "vocabulary_size": len(values),
-        "probability_sum": float(values.sum()),
-        "threshold_sweep": sweep,
-        "entropy_bits": float(-np.sum(values * np.log2(np.maximum(values, 1e-300)))),
-        "max_probability": float(values[order[0]]),
-        "top_10_probability_mass": float(values[order[:10]].sum()),
-        "top_tokens": top_tokens,
-    }
+    report["top_tokens"] = [{
+        "token_id": int(index),
+        "token": decoder(int(index)) if decoder else str(int(index)),
+        "probability": float(values[index]),
+    } for index in order[:10]]
+    return report
 
 
 def check_reference_distribution():
@@ -263,7 +223,7 @@ def _atomic_savez(path, input_ids, probabilities):
             temporary.unlink()
 
 
-def measure_session(session, model_dir=None, thresholds=THRESHOLDS, predictor=None):
+def measure_session(session, model_dir=None, thresholds=THRESHOLDS, predictor=None, actual_token_id=None):
     np = _numpy()
     check_reference_distribution()
     thresholds = parse_thresholds(thresholds)
@@ -283,7 +243,7 @@ def measure_session(session, model_dir=None, thresholds=THRESHOLDS, predictor=No
     atomic_write(run_path / "context.txt", prompt)
     measurements = measure_probabilities(
         prediction.probabilities, thresholds,
-        decoder=getattr(predictor, "decode", None),
+        decoder=getattr(predictor, "decode", None), actual_token_id=actual_token_id,
     )
     report = {
         "schema_version": 1,

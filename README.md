@@ -183,6 +183,23 @@ SVG and VDI use the Python standard library. PNG and native graphical views requ
 </details>
 
 <details>
+<summary><strong>Unified analytical engine</strong></summary>
+
+The analytical engine uses one measurement kernel for live ONNX forecasts and saved NPZ distributions. It records accessible volume, complements, entropy, momentum, and optional observed-token scoring. Existing prediction, steering, tournament, and landmark workflows share the same evidence model.
+
+`gem volume` adds NPZ feedback with independent current/previous keys and no-overwrite reports. `gem guard` binds a forecast to the exact target, selection, revision, proposal, and action ID. Valid proposals remain review-only unless `--approve` is supplied; unsupported commands and stale or duplicate proposals are denied.
+
+```bash
+gem volume current.npz --previous earlier.npz --session /path/to/session
+gem guard proposal.json --action-id proposal-001 \
+  --session /path/to/session --distribution current.npz
+```
+
+See [COGNITION.md](COGNITION.md) for the architecture, supported proposal schema, approval behavior, and the boundary for a future generative component. This is an analytical environment, not a claim of consciousness, learning, or automatic correctness.
+
+</details>
+
+<details>
 <summary><strong>Worked example: landmark alignment</strong></summary>
 
 The [landmark-alignment example](examples/landmark-alignment/README.md) extracts the four marked landmark **points** from the supplied chapter figure and pairs them into **two correspondences**:

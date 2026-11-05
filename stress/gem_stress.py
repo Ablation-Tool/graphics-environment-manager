@@ -608,6 +608,251 @@ class PredictionCase(unittest.TestCase):
             self.assertIsNone(latest_advisory(session))
 
 
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "measurement tests require NumPy")
+class MeasurementKernelCase(unittest.TestCase):
+    def test_complement_momentum_and_outcome(self):
+        from gem.measurement import measure_distribution
+
+        report = measure_distribution(
+            [0.70, 0.20, 0.08, 0.02], thresholds=[0.05],
+            previous=[1.0, 0.0, 0.0, 0.0], minimum=4, maximum=6,
+            actual_token_id=1,
+        )
+        entry = report["threshold_sweep"][0]
+        self.assertEqual(entry["accessible_volume"], 3)
+        self.assertEqual(entry["complement_volume"], 1)
+        self.assertEqual(entry["accessible_momentum"], 2)
+        self.assertEqual(entry["suggested_action"], "let_breadth_grow")
+        self.assertFalse(report["steering"]["executed"])
+        self.assertFalse(report["outcome"]["correct"])
+        self.assertAlmostEqual(report["outcome"]["actual_probability"], 0.20)
+        self.assertGreater(report["outcome"]["log_loss"], 1.0)
+
+    def test_logits_and_validation(self):
+        from gem.measurement import measure_distribution, probabilities_from_logits
+
+        self.assertTrue(np.allclose(probabilities_from_logits([0.0, 0.0]), [0.5, 0.5]))
+        report = measure_distribution([0.05, 0.95], thresholds=[0.05])
+        self.assertEqual(report["threshold_sweep"][0]["accessible_volume"], 1)
+        self.assertEqual(report["threshold_sweep"][0]["complement_volume"], 1)
+        with self.assertRaises(ValueError):
+            measure_distribution([0.5, 0.2])
+        with self.assertRaises(ValueError):
+            measure_distribution([0.5, 0.5], thresholds=[1.1])
+        with self.assertRaises(ValueError):
+            measure_distribution([0.5, 0.5], actual_token_id=2)
+
+
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "NPZ feedback tests require NumPy")
+class VolumeBridgeCase(unittest.TestCase):
+    def test_custom_keys_feedback_and_no_overwrite(self):
+        from gem.volume import VolumeBridge, write_report
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            previous = root / "previous.npz"
+            current = root / "current.npz"
+            np.savez(previous, earlier=np.asarray([1.0, 0.0, 0.0, 0.0]))
+            np.savez(current, input_ids=np.asarray([11, 12]), current=np.asarray([0.70, 0.20, 0.08, 0.02]))
+            session = Session(root / "session", "/bin/true")
+            bridge = VolumeBridge(session)
+            result = bridge.observe(
+                current, previous=previous, key="current", previous_key="earlier",
+                minimum=4, maximum=6, actual_token_id=0,
+            )
+            entry = result.report["threshold_sweep"][1]
+            self.assertEqual(entry["accessible_volume"], 3)
+            self.assertEqual(entry["accessible_momentum"], 2)
+            self.assertEqual(entry["suggested_action"], "let_breadth_grow")
+            self.assertTrue(result.report["outcome"]["correct"])
+            self.assertEqual(result.report["source"]["key"], "current")
+            self.assertEqual(result.report["previous_source"]["key"], "earlier")
+            self.assertFalse(result.report["executed"])
+            self.assertEqual(result.evidence["type"], "evidence")
+            with np.load(result.path / "probabilities.npz") as artifact:
+                self.assertEqual(len(artifact["input_ids"]), 2)
+                self.assertEqual(len(artifact["probabilities"]), 4)
+            second = bridge.observe(current, key="current")
+            self.assertEqual(second.report["previous_source"]["path"], str(result.path / "probabilities.npz"))
+            self.assertEqual(second.report["threshold_sweep"][1]["accessible_momentum"], 0)
+            output = root / "report.json"
+            write_report(result.report, output)
+            original = output.read_text(encoding="utf-8")
+            with self.assertRaises(FileExistsError):
+                write_report(result.report, output)
+            self.assertEqual(output.read_text(encoding="utf-8"), original)
+
+    def test_volume_cli_and_live_outcome(self):
+        from gem.prediction import ModelPrediction
+
+        class Predictor:
+            model = {"id": "fixture-model"}
+            context_truncated = False
+
+            def predict(self, _prompt):
+                return ModelPrediction(
+                    np.asarray([1, 2]), np.asarray([0.70, 0.20, 0.08, 0.02]), self.model, False,
+                )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            previous = root / "previous.npz"
+            current = root / "current.npz"
+            output = root / "volume.json"
+            np.savez(previous, earlier=np.asarray([1.0, 0.0, 0.0, 0.0]))
+            np.savez(current, current=np.asarray([0.70, 0.20, 0.08, 0.02]))
+            session = Session(root / "session", "/bin/true")
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = gem_main([
+                    "volume", str(current), "--session", str(session.root),
+                    "--previous", str(previous), "--key", "current", "--previous-key", "earlier",
+                    "--thresholds", "0.05", "--min-volume", "4", "--max-volume", "6",
+                    "--actual-token-id", "0", "--output", str(output),
+                ])
+            self.assertEqual(result, 0)
+            report = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(report["threshold_sweep"][0]["accessible_momentum"], 2)
+            self.assertTrue(report["outcome"]["correct"])
+            original = output.read_text(encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                duplicate = gem_main([
+                    "volume", str(current), "--session", str(session.root),
+                    "--key", "current", "--output", str(output),
+                ])
+            self.assertEqual(duplicate, 2)
+            self.assertEqual(output.read_text(encoding="utf-8"), original)
+            live = GemLabHost(session).measure_prediction(predictor=Predictor(), actual_token_id=0)
+            self.assertTrue(live.report["outcome"]["correct"])
+
+
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "cognitive guard tests require NumPy")
+class CognitiveGuardCase(unittest.TestCase):
+    def measurement(self, session, path):
+        from gem.volume import VolumeBridge
+
+        np.savez(path, input_ids=np.asarray([1, 2]), probabilities=np.asarray([0.70, 0.20, 0.08, 0.02]))
+        return VolumeBridge(session).observe(path).report
+
+    def test_review_approval_and_duplicate_action(self):
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            measurement = self.measurement(session, Path(directory) / "forecast.npz")
+            host = GemLabHost(session)
+            proposal = {"command": "snapshot"}
+            review = host.review_proposal(proposal, measurement, "review-action")
+            self.assertEqual(review.report["decision"], "review")
+            self.assertFalse(review.report["executed"])
+            self.assertEqual(len(review.report["events"]), 3)
+            approved = host.review_proposal(proposal, measurement, "approved-action", approve=True)
+            self.assertTrue(approved.report["succeeded"])
+            self.assertTrue(approved.report["executed"])
+            self.assertEqual(approved.report["response"]["result_type"], "dict")
+            duplicate = host.review_proposal(proposal, measurement, "approved-action", approve=True)
+            self.assertEqual(duplicate.report["decision"], "deny")
+            self.assertEqual(duplicate.report["reason"], "duplicate_action_id")
+            self.assertFalse(duplicate.report["executed"])
+
+    def test_stale_selection_and_context_mismatch_are_denied(self):
+        from gem.cognition import CognitiveGuard, bind_forecast
+
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            measurement = self.measurement(session, Path(directory) / "forecast.npz")
+            host = GemLabHost(session)
+            snapshot = host.snapshot()
+            proposal = {
+                "command": "begin_selected_work",
+                "expected_id": session.root_id,
+                "expected_revision": snapshot["revision"] + 1,
+            }
+            stale = host.review_proposal(proposal, measurement, "stale-action", approve=True)
+            self.assertEqual(stale.report["decision"], "deny")
+            self.assertEqual(stale.report["reason"], "stale_selection_revision")
+            self.assertFalse(stale.report["executed"])
+            proposal = {"command": "snapshot"}
+            forecast = bind_forecast(measurement, host.snapshot(), proposal)
+            forecast["context_sha256"] = "0" * 64
+            mismatch = CognitiveGuard(GemCommandBroker(host), approve=True).execute(
+                "mismatch-action", proposal, forecast,
+            )
+            self.assertEqual(mismatch.decision, "deny")
+            self.assertEqual(mismatch.reason, "forecast_context_mismatch")
+            self.assertFalse(mismatch.executed)
+
+    def test_exact_revision_approval_and_broker_failure(self):
+        from gem.cognition import CognitiveGuard, bind_forecast
+
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            measurement = self.measurement(session, Path(directory) / "forecast.npz")
+            host = GemLabHost(session)
+            proposal = {
+                "command": "begin_selected_work",
+                "expected_id": session.root_id,
+                "expected_revision": host.snapshot()["revision"],
+                "note": "bounded test work",
+            }
+            result = host.review_proposal(proposal, measurement, "begin-action", approve=True)
+            self.assertTrue(result.report["succeeded"])
+            self.assertEqual(session.current_state()["last_operation"]["type"], "begin_selected_work")
+
+            snapshot = host.snapshot()
+            proposal = {
+                "command": "begin_selected_work",
+                "expected_id": session.root_id,
+                "expected_revision": snapshot["revision"],
+                "note": "exercise the broker failure path",
+            }
+            forecast = bind_forecast(measurement, snapshot, proposal)
+
+            class FailingBroker:
+                def execute(self, request):
+                    if request["command"] == "snapshot":
+                        return snapshot
+                    raise RuntimeError("fixture broker failure")
+
+            failed = CognitiveGuard(FailingBroker(), approve=True).execute(
+                "failed-action", proposal, forecast,
+            )
+            self.assertTrue(failed.executed)
+            self.assertFalse(failed.succeeded)
+            self.assertEqual(failed.reason, "broker_execution_failed")
+            self.assertEqual(failed.events[-1]["details"]["status"], "failed")
+
+    def test_guard_cli_review_and_duplicate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            session = Session(root / "session", "/bin/true")
+            measurement_path = root / "forecast.npz"
+            self.measurement(session, measurement_path)
+            proposal = root / "proposal.json"
+            proposal.write_text('{"command":"snapshot"}', encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                result = gem_main([
+                    "guard", str(proposal), "--action-id", "cli-review",
+                    "--session", str(session.root), "--distribution", str(measurement_path), "--json",
+                ])
+            self.assertEqual(result, 0)
+            report = json.loads(output.getvalue())
+            self.assertEqual(report["decision"], "review")
+            self.assertFalse(report["executed"])
+            with contextlib.redirect_stdout(io.StringIO()):
+                duplicate = gem_main([
+                    "guard", str(proposal), "--action-id", "cli-review",
+                    "--session", str(session.root), "--distribution", str(measurement_path), "--json",
+                ])
+            self.assertEqual(duplicate, 2)
+            invalid = root / "duplicate-field.json"
+            invalid.write_text('{"command":"snapshot","command":"begin_selected_work"}', encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                rejected = gem_main([
+                    "guard", str(invalid), "--action-id", "duplicate-field",
+                    "--session", str(session.root), "--distribution", str(measurement_path),
+                ])
+            self.assertEqual(rejected, 2)
+
+
 @unittest.skipUnless(importlib.util.find_spec("numpy"), "landmark tests require NumPy")
 class LandmarkCase(unittest.TestCase):
     def setUp(self):

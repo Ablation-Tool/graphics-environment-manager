@@ -66,6 +66,7 @@ def _parser():
     predict.add_argument("--session", required=True, help="investigation session directory")
     predict.add_argument("--model-dir", help="local distilgpt2 model cache (default: per-user GEM data directory)")
     predict.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    predict.add_argument("--actual-token-id", type=int, help="optional observed token for correctness and calibration scoring")
     predict.add_argument("--json", action="store_true", help="print the complete measurement report")
 
     steer = commands.add_parser("steer", help="recommend a cautious next action from the current prediction and its trend")
@@ -73,6 +74,19 @@ def _parser():
     steer.add_argument("--model-dir", help="local distilgpt2 model cache (default: per-user GEM data directory)")
     steer.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
     steer.add_argument("--json", action="store_true", help="print the complete measurement and advisory report")
+
+    volume = commands.add_parser("volume", help="measure and feed back a saved full-vocabulary NPZ distribution")
+    volume.add_argument("distribution", help="NPZ containing probabilities and optional input_ids")
+    volume.add_argument("--session", help="optional investigation session for separate evidence")
+    volume.add_argument("--previous", help="earlier NPZ distribution; default: latest feedback artifact when available")
+    volume.add_argument("--key", default="probabilities", help="NPZ key for the current distribution")
+    volume.add_argument("--previous-key", help="NPZ key for the earlier distribution; default: current key")
+    volume.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    volume.add_argument("--min-volume", type=int, default=1, help="target volume lower bound")
+    volume.add_argument("--max-volume", type=int, default=4, help="target volume upper bound")
+    volume.add_argument("--actual-token-id", type=int, help="optional observed token for correctness and calibration scoring")
+    volume.add_argument("--output", help="additional new JSON report path; existing files are never overwritten")
+    volume.add_argument("--json", action="store_true", help="print the complete measurement and advisory report")
 
     tournament = commands.add_parser("tournament", help="attack fixed and adaptive equations plus context variants without changing policy")
     tournament.add_argument("--session", required=True, help="investigation session directory")
@@ -85,6 +99,17 @@ def _parser():
     landmarks.add_argument("--session", required=True, help="investigation session directory")
     landmarks.add_argument("--allow-reflection", action="store_true", help="permit orientation-reversing orthogonal alignment")
     landmarks.add_argument("--json", action="store_true", help="print the complete alignment report")
+
+    guard = commands.add_parser("guard", help="bind a forecast to a proposal, then review or explicitly approve it")
+    guard.add_argument("proposal", help="JSON proposal containing a supported command")
+    guard.add_argument("--action-id", required=True, help="unique bounded action identifier")
+    guard.add_argument("--session", required=True, help="investigation session directory")
+    guard.add_argument("--distribution", help="optional NPZ forecast; default: live local model prediction")
+    guard.add_argument("--key", default="probabilities", help="NPZ key for the forecast distribution")
+    guard.add_argument("--model-dir", help="local distilgpt2 model cache for live prediction")
+    guard.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    guard.add_argument("--approve", action="store_true", help="execute a valid proposal; without this flag it is review-only")
+    guard.add_argument("--json", action="store_true", help="print the complete guard report")
 
     launch = commands.add_parser("launch", help="open GEM and choose a target inside the application")
     launch.add_argument("--toolkit", choices=("auto", "gtk", "tk"), default="auto")
@@ -128,6 +153,76 @@ def _print_report(report):
 def main(argv=None):
     arguments = _parser().parse_args(argv)
     try:
+        if arguments.command == "volume":
+            from gem.events import Session
+            from .volume import VolumeBridge, write_report
+
+            session = Session(arguments.session) if arguments.session else None
+            result = VolumeBridge(session).observe(
+                arguments.distribution,
+                previous=arguments.previous,
+                thresholds=arguments.thresholds,
+                key=arguments.key,
+                previous_key=arguments.previous_key,
+                minimum=arguments.min_volume,
+                maximum=arguments.max_volume,
+                actual_token_id=arguments.actual_token_id,
+            )
+            if arguments.output:
+                output = write_report(result.report, arguments.output)
+                print(f"Report: {output}")
+            if arguments.json:
+                print(json.dumps(result.report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                for measurement in result.report["threshold_sweep"]:
+                    print(
+                        f"τ={measurement['tau']:.2f} A(S)={measurement['accessible_volume']} "
+                        f"complement={measurement['complement_volume']}"
+                    )
+                print(f"Advisory: {result.report['advisory']['label']}")
+                if "outcome" in result.report:
+                    outcome = result.report["outcome"]
+                    print(f"Outcome: correct={outcome['correct']}; log_loss={outcome['log_loss']:.6f}")
+                print(f"Run: {result.path}")
+                if result.evidence is not None:
+                    print(f"Evidence: {result.evidence['id']}")
+            return 0
+        if arguments.command == "guard":
+            from gem.events import Session
+            from .cognition import unique_object
+            from .host import GemLabHost
+            from .volume import VolumeBridge
+
+            proposal_path = Path(arguments.proposal).expanduser().resolve(strict=True)
+            if proposal_path.stat().st_size > 1024 * 1024:
+                raise ValueError("proposal JSON exceeds the 1 MiB limit")
+            proposal = json.loads(proposal_path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            if not isinstance(proposal, dict):
+                raise ValueError("proposal JSON must contain an object")
+            session = Session(arguments.session)
+            host = GemLabHost(session)
+            if arguments.distribution:
+                measurement = VolumeBridge(session).observe(
+                    arguments.distribution, thresholds=arguments.thresholds, key=arguments.key,
+                ).report
+            else:
+                measurement = host.measure_prediction(
+                    model_dir=arguments.model_dir, thresholds=arguments.thresholds,
+                ).report
+            result = host.review_proposal(
+                proposal, measurement, arguments.action_id, approve=arguments.approve,
+            )
+            report = result.report
+            if arguments.json:
+                print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                print(f"Decision: {report['decision']}")
+                print(f"Reason: {report['reason']}")
+                print(f"Executed: {report['executed']}")
+                print(f"Succeeded: {report['succeeded']}")
+                print(f"Run: {result.path}")
+                print(f"Evidence: {result.evidence['id']}")
+            return 0 if report["decision"] == "review" or report["succeeded"] else 2
         if arguments.command == "landmarks":
             from gem.events import Session
             from .host import GemLabHost
@@ -165,6 +260,7 @@ def main(argv=None):
 
             result = GemLabHost(Session(arguments.session)).measure_prediction(
                 model_dir=arguments.model_dir, thresholds=arguments.thresholds,
+                actual_token_id=arguments.actual_token_id,
             )
             if arguments.json:
                 print(json.dumps(result.report, indent=2, ensure_ascii=False, sort_keys=True))

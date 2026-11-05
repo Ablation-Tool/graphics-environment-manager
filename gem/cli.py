@@ -78,6 +78,14 @@ def _parser():
     hourglass.add_argument("--format", choices=("svg", "png", "gem"), help="default: infer from output suffix")
     hourglass.add_argument("--width", type=int, default=1200, help="SVG/PNG width in pixels")
 
+    eye = commands.add_parser("eye", help="inspect synthetic stereo depth, parallax, and depth of field")
+    eye.add_argument("--focus", type=float, default=1.6, help="focus distance in meters, 0.5-10")
+    eye.add_argument("--aperture", type=float, default=4.0, help="f-number, 1-64")
+    eye.add_argument("--baseline", type=float, default=.065, help="stereo baseline in meters, 0.02-0.25")
+    eye.add_argument("--output", help="export .json, .svg, .png, or .gem instead of opening the native instrument")
+    eye.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    eye.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
+
     replay_parser = commands.add_parser("replay", help="recompute verification from run artifacts")
     replay_parser.add_argument("run", help="GEM run directory")
     replay_parser.add_argument("--json", action="store_true", help="emit the complete recomputed report")
@@ -254,6 +262,28 @@ def _emit_json(document, output=None):
 def main(argv=None):
     arguments = _parser().parse_args(argv)
     try:
+        if arguments.command == "eye":
+            from .eye import EyeModel, eye_scene
+            model = EyeModel(focus=arguments.focus, fstop=arguments.aperture, baseline=arguments.baseline)
+            scene, report = eye_scene(model)
+            if not arguments.output:
+                from .eye_view import launch_eye
+                launch_eye(model)
+                return 0
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                _emit_json(report, output)
+            elif kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("eye output format must be json, svg, png, or gem")
+            _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "actual_camera_used": False, "executed": False})
+            return 0
         if arguments.command == "os":
             if arguments.output:
                 from .mirror import os_document

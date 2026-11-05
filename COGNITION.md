@@ -209,16 +209,48 @@ python -m gem os --module field --output zoe-field.gem
 
 The supplied 358-document scan contains 13,023 text-bearing pages out of 16,720 total pages. Eighteen documents have no text layer, and 755 unsupported files were excluded. These are index-coverage measurements, not proof that the manuals support a scientific claim. See [the library guide](docs/LIBRARY.md) and [its extraction record](evidence/library/index-summary.json).
 
+## Second eye: parallax and depth of field
+
+`gem.eye` is a synthetic stereo instrument, not a claim of human vision or a second opinion from a model. It creates two parallel pinhole views with a known baseline \(B\), focal length \(f\), sensor width \(s\), and image width \(W\). With \(f_{px}=fW/s\), a point at depth \(Z\) has horizontal disparity \(d=f_{px}B/Z\). The depth estimate is
+
+\[
+Z=\frac{f_{px}B}{d}.
+\]
+
+For disparity quantized by \(q\) pixels, the display shows the first-order sensitivity \(\sigma_q\), not a posterior or confidence interval:
+
+\[
+\sigma_q=\frac{Z^2q}{f_{px}B}.
+\]
+
+This makes the tradeoff visible: depth uncertainty grows approximately with \(Z^2\), while a larger baseline or more precise correspondence reduces it. Correspondence failures, occlusion, calibration errors, and real-camera noise are outside this synthetic experiment.
+
+Defocus is separate from depth. `EyeModel.circle_of_confusion` uses the thin-lens approximation
+
+\[
+c=\frac{f^2|Z-Z_0|}{NZ(Z_0-f)},
+\]
+
+where \(Z_0\) is focus distance and \(N\) is the f-number. `depth_of_field` computes approximate hyperfocal, near, and far limits using a **30µm** acceptable circle of confusion. Unit pupil magnification is assumed; macro optics and a physical point-spread function are not modeled. Display rings visualize the computed radius rather than simulating optical blur. Aperture examples follow the supplied depth-of-field chart without treating it as a calibration for the virtual 50mm lens.
+
+```bash
+python -m gem eye
+python -m gem eye --focus 2.2 --aperture 11 --baseline .08 --output second-eye.svg
+python -m gem eye --output second-eye.json
+```
+
+The native `gem.eye_view` window provides focus, aperture, and baseline controls and JSON/SVG/PNG/GEM VDI export. `gem.eye` produces the same scene and report without accessing a camera. `tools.test_eye` checks known geometry, depth sensitivity, defocus, unbounded far depth of field, scene/VDI constraints, no-overwrite exports, and native controls. The preserved default measurement is [`evidence/eye/synthetic-stereo.json`](evidence/eye/synthetic-stereo.json).
+
 ## Verification and remaining limits
 
 ```bash
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
-python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye
 
 stress/nested_x11.sh env PYTHONPATH=. \
-  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye
 ```
 
 The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.

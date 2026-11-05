@@ -35,6 +35,25 @@ python -m gem os --module library
 
 Original manuals stay in place. PDFs without text layers are reported rather than presented as searchable; unsupported files are not executed. See [the library guide](docs/LIBRARY.md), [cognition architecture](COGNITION.md), and [verification evidence](evidence/mirror/workbench-verification.json).
 
+<details>
+<summary><strong>Zoe's second eye: parallax and depth of field</strong></summary>
+
+![Zoe's second eye](docs/images/zoe-second-eye.png)
+
+`gem eye` opens a native stereo instrument with focus, aperture, and baseline controls. Two synthetic pinhole views estimate depth from disparity; a separate thin-lens approximation estimates defocus. The ± values are first-order sensitivity to **0.25-pixel disparity quantization**, not probabilities or beliefs.
+
+```bash
+python -m gem eye
+python -m gem eye --focus 2.2 --aperture 11 --baseline .08 --output second-eye.svg
+python -m gem eye --output second-eye.json
+```
+
+The default scene uses a virtual **50mm lens**, **36mm sensor**, and **65mm baseline**. No physical camera is accessed. The supplied aperture chart informs the available f-number examples, not an inferred lens calibration. Defocus rings are not a physical blur kernel, macro optics are not modeled, and computed depth is not subjective sight.
+
+See [the mathematical model and limits](COGNITION.md#second-eye-parallax-and-depth-of-field), [synthetic evidence](evidence/eye/synthetic-stereo.json), and the [human × Zoe artwork](examples/brain-dialogue/).
+
+</details>
+
 ## Origin and naming
 
 **Graphics Environment Manager did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.

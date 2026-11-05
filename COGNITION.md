@@ -162,10 +162,73 @@ gem guard proposal.json \
 
 Add `--approve` only when a human explicitly intends to execute a valid proposal. A valid unapproved review returns zero. A denial or failed execution returns status 2. Guard reports are retained under `cognition-runs/`; generation reports are retained under `generation-runs/`.
 
+## Mirrored brain and unified workbench
+
+The unified Zoe work is implemented in this repository's `gem` package, not in `guiai-lab`. `gem.mirror` pairs forward and retrograde HELEN forecasts at the same held-out index. `gem.forecast` measures each direction independently; there is no implicit probability mixture or claim of time-reversed causation. `gem.mirror_view` provides the native GTK window for the mirrored brain, library, and field notebook.
+
+The packaged `gem/assets/onset-seed7.json.gz` contains the stored seed-7 categorical forecasts, so these observations do not download model weights. NumPy is required and is included in the `predict` dependency set. Loading an observation is not an evidence event and cannot update a field-notebook posterior or authorize an action.
+
+```bash
+python -m gem os
+python -m gem workbench list
+python -m gem workbench check --output workbench-verification.json
+```
+
+`gem.workbench` registers **17 runnable operations**: 13 original equation sections, causal-repertoire normalization, q-arrow annotation, two-way accessible records, and mirrored observation. It includes strict accessible volume, adaptive volume, exact joint counts, temperature, categorical sampling, Markov continuations, timing RMSE, Procrustes alignment, and a labeled inspection-priority heuristic. The catalog gives each operation's evidence scope; the verification command checks all 17 against expected results and reports failures rather than converting them into successes.
+
+The mirrored evaluation covers **1,920 matched pairs**, preserves correctness and accessible-set membership separately, and caps its history at the latest **128 pairs**. `executed=False` describes the measurement boundary; it is not a permission token.
+
+To call an operation, supply a JSON object in a file, for example:
+
+```json
+{"probabilities": [0.70, 0.20, 0.08, 0.02], "tau": 0.05}
+```
+
+```bash
+python -m gem workbench run volume/strict@v1 --input probabilities.json
+```
+
+## Manual library and field memory
+
+`gem.library` builds an explicitly requested, local SQLite index of PDF, HTML, TXT, and Markdown sources. It stores source hashes, returns literal-phrase matches with page references, and opens existing indexes read-only. HTML markup and script/style text are removed before indexing. Existing databases are not overwritten, unsupported archives and binaries are not executed, and book content is never a command source.
+
+```bash
+python -m gem library index --root /path/to/GEM/Books --database /path/to/gem-manuals.sqlite
+export GEM_LIBRARY=/path/to/gem-manuals.sqlite
+python -m gem library search --database "$GEM_LIBRARY" --query VDI
+python -m gem os --module library
+```
+
+`gem.field` retains the epistemic firewall: measurement is not evidence, a belief update, or an action. Only explicit evidence changes a posterior. Hash-chained JSON memory detects edited or reordered events but does not authenticate its writer. The native window supports questions, competing claims, evidence updates, deterministic and stochastic chambers, save/load, and SVG/PNG/GEM VDI export.
+
+```bash
+python -m gem notebook --output zoe-field.json
+python -m gem notebook zoe-field.json --output zoe-field.svg
+python -m gem os --module field --output zoe-field.gem
+```
+
+The supplied 358-document scan contains 13,023 text-bearing pages out of 16,720 total pages. Eighteen documents have no text layer, and 755 unsupported files were excluded. These are index-coverage measurements, not proof that the manuals support a scientific claim. See [the library guide](docs/LIBRARY.md) and [its extraction record](evidence/library/index-summary.json).
+
+## Verification and remaining limits
+
+```bash
+python stress/run_stress.py
+python stress/native_stress.py
+python stress/gem_stress.py
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard
+
+stress/nested_x11.sh env PYTHONPATH=. \
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard
+```
+
+The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.
+
 ## Limits
 
 Accessible volume describes forecast breadth, not correctness, safety, maliciousness, authorization, creativity, or understanding. Observed-token scoring requires the actual token and vocabulary mapping. A DistilGPT2 distribution is not automatically the embedded agent's distribution or a distribution over permitted actions.
 
 Advisory modes and target bands are inspectable heuristics. Equation tournaments measure sensitivity, not superiority. Multi-horizon counts do not guarantee correct future tokens. Generated text is not evidence of reasoning, and no model weights are trained or updated.
 
-The HOP geometric predictor remains a rejected baseline. Rhythm and other domain experiments can supply NPZ forecasts but are not proof of general reasoning. Books and historical artifacts can inform algorithms and provenance, but they do not validate a policy by themselves. Verified outcomes, approximation errors, and negative results must be preserved before claiming improvement or a complete brain.
+The HOP geometric predictor remains a rejected baseline. Its saved negative result is preserved, but full HOP inference was not rerun during this migration because the original extracted `learn-music-theory/004_Chapter_1.html` and `classical-geometry-euclidean/007_c01.htm.html` corpus files are missing from this host. This limitation does not change the mirrored HELEN evaluation, which uses its packaged categorical artifact.
+
+Rhythm and other domain experiments can supply NPZ forecasts but are not proof of general reasoning. Books and historical artifacts can inform algorithms and provenance, but they do not validate a policy by themselves. Verified outcomes, approximation errors, and negative results must be preserved before claiming improvement or a complete brain.

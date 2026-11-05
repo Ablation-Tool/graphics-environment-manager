@@ -22,6 +22,43 @@ def _parser():
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
 
+    os_command = commands.add_parser("os", help="open the mirrored GEM brain, manual library, or field notebook")
+    os_command.add_argument("--module", choices=("mirror", "library", "field"), default="mirror")
+    os_command.add_argument("--output", help="export the default scene to .svg, .png, or .gem instead of opening GTK")
+    os_command.add_argument("--format", choices=("svg", "png", "gem"), help="default: infer from output suffix")
+    os_command.add_argument("--width", type=int, default=1200, help="SVG/PNG width in pixels")
+
+    workbench = commands.add_parser("workbench", help="list, run, and verify the unified GEM mathematical catalog")
+    workbench_commands = workbench.add_subparsers(dest="workbench_command", required=True)
+    workbench_commands.add_parser("list", help="list every equation and its evidence boundary")
+    workbench_run = workbench_commands.add_parser("run", help="evaluate an equation with a JSON object of named inputs")
+    workbench_run.add_argument("equation", help="equation identifier from workbench list")
+    workbench_run.add_argument("--input", required=True, help="JSON object containing equation inputs")
+    workbench_run.add_argument("--output", help="new JSON output path; omit to print the result")
+    workbench_check = workbench_commands.add_parser("check", help="verify every registered algorithm against independent expected results")
+    workbench_check.add_argument("--output", help="new JSON evidence path; omit to print the full report")
+
+    library = commands.add_parser("library", help="index and search local GEM manuals without executing their content")
+    library_commands = library.add_subparsers(dest="library_command", required=True)
+    library_index = library_commands.add_parser("index", help="build a new local full-text index")
+    library_index.add_argument("--root", action="append", required=True, help="manual file or directory; repeat for multiple roots")
+    library_index.add_argument("--database", required=True, help="new SQLite index path; existing files are not overwritten")
+    library_stats = library_commands.add_parser("stats", help="show index coverage and extraction limits")
+    library_stats.add_argument("--database", required=True)
+    library_search = library_commands.add_parser("search", help="search indexed manual pages")
+    library_search.add_argument("--database", required=True)
+    library_search.add_argument("--query", required=True)
+    library_search.add_argument("--limit", type=int, default=8)
+    library_open = library_commands.add_parser("open", help="open a source document with the desktop opener")
+    library_open.add_argument("--database", required=True)
+    library_open.add_argument("--document", required=True)
+
+    notebook = commands.add_parser("notebook", help="verify, save, or render the GEM Bayesian field notebook")
+    notebook.add_argument("input", nargs="?", help="saved notebook JSON; omit to use the worked GEM example")
+    notebook.add_argument("--output", required=True, help="new .json, .svg, .png, or .gem output path")
+    notebook.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    notebook.add_argument("--width", type=int, default=1200, help="SVG/PNG width in pixels")
+
     demo = commands.add_parser("demo", help="export the verified house example")
     demo.add_argument("--output", required=True, help="new or empty run directory")
 
@@ -35,6 +72,11 @@ def _parser():
     render.add_argument("--output", required=True, help="output artifact path")
     render.add_argument("--format", choices=("svg", "png", "gem"), help="default: infer from output suffix")
     render.add_argument("--width", type=int, default=1200, help="SVG/PNG width in pixels")
+
+    hourglass = commands.add_parser("hourglass", help="export Zoe's GEM/Artline Accessible Q-Volume hourglass")
+    hourglass.add_argument("--output", required=True, help="output artifact path")
+    hourglass.add_argument("--format", choices=("svg", "png", "gem"), help="default: infer from output suffix")
+    hourglass.add_argument("--width", type=int, default=1200, help="SVG/PNG width in pixels")
 
     replay_parser = commands.add_parser("replay", help="recompute verification from run artifacts")
     replay_parser.add_argument("run", help="GEM run directory")
@@ -198,9 +240,100 @@ def _measure_from_arguments(host, session, arguments):
     ).report
 
 
+def _emit_json(document, output=None):
+    text = json.dumps(document, ensure_ascii=False, allow_nan=False, indent=2, sort_keys=True) + "\n"
+    if output is None:
+        print(text, end="")
+        return None
+    path = Path(output)
+    with path.open("x", encoding="utf-8") as handle:
+        handle.write(text)
+    return path
+
+
 def main(argv=None):
     arguments = _parser().parse_args(argv)
     try:
+        if arguments.command == "os":
+            if arguments.output:
+                from .mirror import os_document
+                from os import environ
+                scene, report = os_document(arguments.module, environ.get("GEM_LIBRARY"))
+                output = Path(arguments.output)
+                kind = arguments.format or output.suffix.lower().lstrip(".")
+                if kind == "svg":
+                    write_svg(scene, output, arguments.width)
+                elif kind == "png":
+                    write_png(scene, output, arguments.width)
+                elif kind == "gem":
+                    write_metafile(scene, output)
+                else:
+                    raise ValueError("os output format must be svg, png, or gem")
+                _emit_json({"module": arguments.module, "output": str(output), "bytes": output.stat().st_size, "measurement": report})
+            else:
+                from .mirror_view import launch_os
+                launch_os(arguments.module)
+            return 0
+        if arguments.command == "library":
+            from .authorization import launch_explicit
+            from .library import ManualLibrary
+            from subprocess import DEVNULL
+            if arguments.library_command == "index":
+                library = ManualLibrary.index(arguments.root, arguments.database)
+                _emit_json(library.summary())
+                return 0
+            library = ManualLibrary(arguments.database)
+            if arguments.library_command == "stats":
+                _emit_json(library.summary())
+                return 0
+            if arguments.library_command == "search":
+                _emit_json({"query": arguments.query, "results": library.search(arguments.query, arguments.limit), "executed": False})
+                return 0
+            document = Path(arguments.document).expanduser()
+            if not document.is_file() or document.is_symlink():
+                raise ValueError("document must be an existing regular, non-symlink file")
+            launch_explicit(["/usr/bin/xdg-open", str(document)], approved=True, stdout=DEVNULL, stderr=DEVNULL, start_new_session=True)
+            _emit_json({"document": str(document), "opened": True, "approved_by": "explicit_user_action"})
+            return 0
+        if arguments.command == "workbench":
+            from .workbench import Workbench
+            workbench = Workbench()
+            if arguments.workbench_command == "list":
+                _emit_json({"algorithm_count": len(workbench.catalog()), "algorithms": workbench.catalog(), "executed": False})
+                return 0
+            if arguments.workbench_command == "check":
+                report = workbench.verify()
+                output = _emit_json(report, arguments.output)
+                if output is not None:
+                    print(json.dumps({"output": str(output), "algorithm_count": report["algorithm_count"], "passed": report["passed"], "failed": report["failed"]}, indent=2))
+                return 0 if report["failed"] == 0 else 1
+            inputs = json.loads(Path(arguments.input).read_text(encoding="utf-8"))
+            if not isinstance(inputs, dict):
+                raise ValueError("workbench input must be a JSON object of named arguments")
+            outcome = workbench.evaluate(arguments.equation, **inputs)
+            output = _emit_json(outcome, arguments.output)
+            if output is not None:
+                print(json.dumps({"equation": arguments.equation, "output": str(output), "executed": False}, indent=2))
+            return 0
+        if arguments.command == "notebook":
+            from .field import FieldNotebook, field_scene
+            notebook = FieldNotebook.load(arguments.input) if arguments.input else FieldNotebook.demo()
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                notebook.save(output)
+            else:
+                scene, _ = field_scene(notebook)
+                if kind == "svg":
+                    write_svg(scene, output, arguments.width)
+                elif kind == "png":
+                    write_png(scene, output, arguments.width)
+                elif kind == "gem":
+                    write_metafile(scene, output)
+                else:
+                    raise ValueError("notebook output format must be json, svg, png, or gem")
+            _emit_json({"instrument": "GEM Bayesian field notebook", "events": len(notebook.events), "questions": len(notebook.questions), "claims": len(notebook.claims), "measurements": len(notebook.measurements), "output": str(output), "bytes": output.stat().st_size})
+            return 0
         if arguments.command == "volume":
             from gem.events import Session
             from .volume import VolumeBridge, write_report
@@ -546,6 +679,28 @@ def main(argv=None):
                     print()
                     _print_report(documents["vdi"])
             return 0 if all(report["passed"] for report in documents.values()) else 1
+        if arguments.command == "hourglass":
+            from .hourglass import hourglass_scene
+
+            scene, report = hourglass_scene()
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("output format must be svg, png, or gem")
+            print(json.dumps({
+                "module": "hourglass",
+                "format": kind,
+                "output": str(output),
+                "bytes": output.stat().st_size,
+                "measurement": report,
+            }, indent=2, ensure_ascii=False, sort_keys=True))
+            return 0
         if arguments.command == "render":
             scene = Scene.load(arguments.scene)
             output = Path(arguments.output)

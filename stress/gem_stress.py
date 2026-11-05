@@ -159,6 +159,59 @@ class GeometryCase(unittest.TestCase):
         self.assertTrue(verify(recovered).passed)
 
 
+class HourglassCase(unittest.TestCase):
+    def test_scene_math_constraints_and_native_vdi_primitives(self):
+        from gem.hourglass import _inside_triangle, accessible_q_toy, hourglass_scene
+
+        toy = accessible_q_toy()
+        self.assertEqual([row["delta_accessible_q_volume"] for row in toy["arrows"]], [-1, 3])
+        self.assertAlmostEqual(toy["arrows"][0]["ei_bits"], 0.4150374992788437)
+        scene, report = hourglass_scene()
+        self.assertTrue(verify(scene).passed, verify(scene).text())
+        self.assertTrue(verify_vdi(scene).passed)
+        self.assertEqual(report["past_accessible_q_volume"], 3)
+        self.assertEqual(report["future_accessible_volume"], 3)
+        self.assertGreater(report["contour_segments"], 0)
+        self.assertTrue(any(item["id"].startswith("past-hatch-") for item in scene.objects))
+        self.assertTrue(any(item["id"].startswith("future-hatch-") for item in scene.objects))
+        for prefix, triangle in (
+            ("past", [[250, 190], [950, 190], [600, 480]]),
+            ("future", [[250, 770], [950, 770], [600, 480]]),
+        ):
+            for item in scene.objects:
+                if item["id"].startswith(f"{prefix}-hatch-"):
+                    self.assertTrue(all(_inside_triangle(point, triangle) for point in item["points"]), item["id"])
+        self.assertFalse(report["phi_computed"])
+        self.assertFalse(report["consciousness_measured"])
+        self.assertFalse(report["executed"])
+        inventory = opcode_inventory(scene_to_metafile(scene))
+        self.assertGreaterEqual(inventory["v_fillarea"], 2)
+        self.assertGreater(inventory["v_pline"], 0)
+        self.assertGreater(inventory["v_gtext"], 0)
+
+    def test_hourglass_cli_exports_spatial_ir_svg(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "hourglass.svg"
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                result = gem_main(["hourglass", "--output", str(output)])
+            self.assertEqual(result, 0)
+            self.assertIn('data-object-id="past-hourglass"', output.read_text(encoding="utf-8"))
+            report = json.loads(stdout.getvalue())
+            self.assertEqual(report["measurement"]["module"], "hourglass")
+            self.assertFalse(report["measurement"]["executed"])
+
+    def test_cairo_resets_path_for_every_scene_object(self):
+        from gem.hourglass import hourglass_scene
+        from gem.render import draw_cairo
+
+        scene, _ = hourglass_scene()
+        context = mock.Mock()
+        with mock.patch.dict(sys.modules, {"cairo": mock.Mock()}):
+            draw_cairo(context, scene, 1200, 1040)
+        self.assertEqual(context.new_path.call_count, len(scene.objects))
+
+
 class ArtifactCase(unittest.TestCase):
     def test_vdi_rejects_truncation_trailing_and_bad_metadata(self):
         data = scene_to_metafile(demo_scene())

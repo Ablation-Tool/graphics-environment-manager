@@ -2,6 +2,39 @@
 
 The standalone home of the canonical **Ablation native workbench**, reusable as a graphical environment for **your project + your AI agent**.
 
+## Zoe OS: one mirrored brain, shared instruments
+
+The unified mathematical work now lives here—not in Zoe's `guiai-lab` directory. `python -m gem os` opens a native GTK desktop for paired forward/retrograde HELEN observations, the local GEM manual library, and the Bayesian field notebook. This is a research desktop, not a bootable kernel or a rebuild of the original Digital Research GEM.
+
+![Zoe's mirrored brain](docs/images/zoe-mirror.png)
+
+```bash
+# Install the numerical runtime for mirrored forecasts.
+python -m pip install -e '.[predict]'
+
+python -m gem os
+python -m gem os --module library
+python -m gem os --module field --output zoe-field.svg
+
+python -m gem workbench list
+python -m gem workbench check --output workbench-verification.json
+python -m gem notebook --output zoe-field.json
+```
+
+The catalog contains **17 operations**: 13 original equation sections, three causal-repertoire operations, and paired mirrored observation. Each check compares results with independent expected values. The mirrored brain evaluates **1,920 aligned pairs**, keeps both distributions separate, and retains only the latest 128 observations. It does not average directions into truth, infer a causal reversal, or execute recommendations.
+
+To search a local collection of GEM manuals, build a new index explicitly and select it through `GEM_LIBRARY`:
+
+```bash
+python -m gem library index \
+  --root /path/to/GEM/Books --database /path/to/gem-manuals.sqlite
+export GEM_LIBRARY=/path/to/gem-manuals.sqlite
+python -m gem library search --database "$GEM_LIBRARY" --query VDI
+python -m gem os --module library
+```
+
+Original manuals stay in place. PDFs without text layers are reported rather than presented as searchable; unsupported files are not executed. See [the library guide](docs/LIBRARY.md), [cognition architecture](COGNITION.md), and [verification evidence](evidence/mirror/workbench-verification.json).
+
 ## Origin and naming
 
 **Graphics Environment Manager did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.
@@ -199,6 +232,21 @@ gem guard proposal.json --action-id proposal-001 \
 ```
 
 See [COGNITION.md](COGNITION.md) for the analytical and generative architecture, joint-distribution requirements, calibration semantics, supported proposal schema, and approval behavior. This is a model-assisted environment, not a claim of consciousness, learning, or automatic correctness.
+
+</details>
+
+<details>
+<summary><strong>Zoe's GEM/Artline Accessible Q-Volume hourglass</strong></summary>
+
+The `gem hourglass` command exports a two-way visual instrument inspired by Digital Research's GEM/Artline geometry. Causal pasts converge into the present, forecast futures diverge, nested frames represent threshold filtrations, and clipped ellipse contours suggest repertoire structure.
+
+```bash
+gem hourglass --output zoe-hourglass.svg
+gem hourglass --output zoe-hourglass.png
+gem hourglass --output zoe-hourglass.gem
+```
+
+The implementation is `gem/hourglass.py`. It computes the silent-AND toy repertoire and the original accessible-volume example with strict `p > τ`, emits standard-palette Spatial IR and real little-endian GEM VDI, and preserves q-arrow volume changes and entering/exiting states in its JSON report. The complete labeled threshold sweep is an exact repertoire representation; a finite grid is approximate. Accessible Q-Volume remains a proposed annotation, not a replacement for Φ or γ and not a measurement of consciousness. `executed=False` remains the boundary between measurement and action.
 
 </details>
 

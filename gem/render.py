@@ -119,6 +119,7 @@ def draw_cairo(context, scene, width, height, highlight_ids=()):
     context.scale(scale, scale)
     context.set_line_join(cairo.LineJoin.ROUND)
     for item in scene.objects:
+        context.new_path()
         if item["type"] == "rectangle":
             left, top, right, bottom = item["bounds"]
             context.rectangle(left, top, right - left, bottom - top)

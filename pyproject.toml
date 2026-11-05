@@ -34,5 +34,5 @@ metrix = "metrix.cli:main"
 include = ["gem*", "metrix*"]
 
 [tool.setuptools.package-data]
-gem = ["assets/*.png", "assets/*.ico", "assets/*.icns", "icons/*.svg", "icons/*.png", "icons/*.ico", "icons/*.icns"]
+gem = ["assets/*.png", "assets/*.ico", "assets/*.icns", "assets/*.json.gz", "icons/*.svg", "icons/*.png", "icons/*.ico", "icons/*.icns"]
 metrix = ["templates/*.html", "gui/*.html", "gui/*.css", "gui/*.js"]

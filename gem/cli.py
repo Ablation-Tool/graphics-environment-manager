@@ -85,6 +85,9 @@ def _parser():
     volume.add_argument("--min-volume", type=int, default=1, help="target volume lower bound")
     volume.add_argument("--max-volume", type=int, default=4, help="target volume upper bound")
     volume.add_argument("--actual-token-id", type=int, help="optional observed token for correctness and calibration scoring")
+    volume.add_argument("--horizon", type=int, default=1, help="number of tokens in each joint continuation (default: 1)")
+    volume.add_argument("--vocabulary-size", type=int, help="token vocabulary size for a flat joint distribution")
+    volume.add_argument("--model-id", help="model identifier override for research artifacts")
     volume.add_argument("--output", help="additional new JSON report path; existing files are never overwritten")
     volume.add_argument("--json", action="store_true", help="print the complete measurement and advisory report")
 
@@ -108,8 +111,36 @@ def _parser():
     guard.add_argument("--key", default="probabilities", help="NPZ key for the forecast distribution")
     guard.add_argument("--model-dir", help="local distilgpt2 model cache for live prediction")
     guard.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    guard.add_argument("--horizon", type=int, default=1, help="joint forecast horizon (default: 1)")
+    guard.add_argument("--vocabulary-size", type=int, help="token vocabulary size for a flat joint distribution")
+    guard.add_argument("--model-id", help="model identifier override for research artifacts")
     guard.add_argument("--approve", action="store_true", help="execute a valid proposal; without this flag it is review-only")
     guard.add_argument("--json", action="store_true", help="print the complete guard report")
+
+    generate = commands.add_parser("generate", help="generate hypotheses and review every proposal without executing them")
+    generate.add_argument("--session", required=True, help="investigation session directory")
+    generate.add_argument("--distribution", help="optional NPZ forecast; default: live local model prediction")
+    generate.add_argument("--key", default="probabilities", help="NPZ key for the forecast distribution")
+    generate.add_argument("--model-dir", help="local distilgpt2 model cache for live prediction")
+    generate.add_argument("--thresholds", default="0.02,0.05,0.10,0.15,0.30,0.50", help="comma-separated probability thresholds")
+    generate.add_argument("--horizon", type=int, default=1, help="joint forecast horizon (default: 1)")
+    generate.add_argument("--vocabulary-size", type=int, help="token vocabulary size for a flat joint distribution")
+    generate.add_argument("--model-id", help="model identifier override for research artifacts")
+    generate.add_argument("--generator-command", help="external JSON generator; {prompt} is replaced or prompt uses stdin")
+    generate.add_argument("--count", type=int, default=4, help="maximum hypotheses to generate, from 1 to 8")
+    generate.add_argument("--timeout", type=float, default=120, help="external generator timeout in seconds")
+    generate.add_argument("--json", action="store_true", help="print the complete generation report")
+
+    calibrate = commands.add_parser("calibrate", help="evaluate confidence and correctness from labeled forecast reports")
+    calibrate.add_argument("reports", nargs="+", help="measurement JSON reports containing outcome objects")
+    calibrate.add_argument("--bins", type=int, default=10, help="calibration bin count from 1 to 100")
+    calibrate.add_argument("--output", help="new calibration JSON path; existing files are never overwritten")
+    calibrate.add_argument("--json", action="store_true", help="print the complete calibration report")
+
+    estimate = commands.add_parser("estimate", help="apply an explicit linear state-space model to observations")
+    estimate.add_argument("model", help="JSON state-space model and observations")
+    estimate.add_argument("--output", help="new estimation JSON path; existing files are never overwritten")
+    estimate.add_argument("--json", action="store_true", help="print the complete estimation report")
 
     launch = commands.add_parser("launch", help="open GEM and choose a target inside the application")
     launch.add_argument("--toolkit", choices=("auto", "gtk", "tk"), default="auto")
@@ -150,6 +181,23 @@ def _print_report(report):
     print(VerificationReport(report["scene_id"], report["results"]).text())
 
 
+def _measure_from_arguments(host, session, arguments):
+    if arguments.distribution:
+        from .volume import VolumeBridge
+
+        return VolumeBridge(session).observe(
+            arguments.distribution,
+            thresholds=arguments.thresholds,
+            key=arguments.key,
+            horizon=arguments.horizon,
+            vocabulary_size=arguments.vocabulary_size,
+            model_id=arguments.model_id,
+        ).report
+    return host.measure_prediction(
+        model_dir=arguments.model_dir, thresholds=arguments.thresholds,
+    ).report
+
+
 def main(argv=None):
     arguments = _parser().parse_args(argv)
     try:
@@ -167,6 +215,9 @@ def main(argv=None):
                 minimum=arguments.min_volume,
                 maximum=arguments.max_volume,
                 actual_token_id=arguments.actual_token_id,
+                horizon=arguments.horizon,
+                vocabulary_size=arguments.vocabulary_size,
+                model_id=arguments.model_id,
             )
             if arguments.output:
                 output = write_report(result.report, arguments.output)
@@ -187,11 +238,116 @@ def main(argv=None):
                 if result.evidence is not None:
                     print(f"Evidence: {result.evidence['id']}")
             return 0
+        if arguments.command == "calibrate":
+            from .cognition import unique_object
+            from .evaluation import calibration_metrics
+            from .volume import write_report
+
+            records = []
+            for name in arguments.reports:
+                path = Path(name).expanduser().resolve(strict=True)
+                if path.stat().st_size > 1024 * 1024:
+                    raise ValueError(f"calibration report exceeds the 1 MiB limit: {path}")
+                document = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+                if isinstance(document, list):
+                    records.extend(document)
+                elif isinstance(document, dict) and isinstance(document.get("results"), list):
+                    records.extend(document["results"])
+                elif isinstance(document, dict):
+                    records.append(document)
+                else:
+                    raise ValueError(f"calibration input must be a report or a results array: {path}")
+            report = calibration_metrics(records, bins=arguments.bins)
+            if arguments.output:
+                output = write_report(report, arguments.output)
+                print(f"Report: {output}")
+            if arguments.json:
+                print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                print(f"Cases: {report['cases']}; accuracy={report['accuracy']:.6f}")
+                print(f"Expected calibration error: {report['expected_calibration_error']:.6f}")
+                print(f"AUROC correctness: {report['auroc_correctness']}")
+                print(f"AUPRC correctness: {report['auprc_correctness']}")
+            return 0
+        if arguments.command == "estimate":
+            from .cognition import unique_object
+            from .estimation import linear_filter
+            from .measurement import document_sha256
+            from .volume import write_report
+
+            model_path = Path(arguments.model).expanduser().resolve(strict=True)
+            if model_path.stat().st_size > 1024 * 1024:
+                raise ValueError("estimation model exceeds the 1 MiB limit")
+            document = json.loads(model_path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            if not isinstance(document, dict):
+                raise ValueError("estimation input must contain a state-space object")
+            results = linear_filter(
+                document["observations"],
+                document["process_matrix"],
+                document["process_covariance"],
+                document["observation_matrix"],
+                document["observation_covariance"],
+                document["initial_state"],
+                document["initial_covariance"],
+                control_matrix=document.get("control_matrix"),
+                controls=document.get("controls"),
+            )
+            report = {
+                "schema_version": 1,
+                "instrument": "explicit linear state-space estimation",
+                "observation_count": len(results),
+                "steps": results,
+                "final_state": results[-1]["state"],
+                "final_covariance": results[-1]["covariance"],
+                "model_sha256": document_sha256(document),
+                "scope": [
+                    "The caller supplies the state-space model and covariances; GEM does not infer or validate system dynamics.",
+                    "Filtering changes an estimate, not an action authorization or a correctness guarantee.",
+                ],
+            }
+            if arguments.output:
+                output = write_report(report, arguments.output)
+                print(f"Report: {output}")
+            if arguments.json:
+                print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                print(f"Observations: {len(results)}")
+                print(f"Final state: {report['final_state']}")
+                print(f"Final covariance: {report['final_covariance']}")
+            return 0
+        if arguments.command == "generate":
+            from gem.events import Session
+            from .generation import AgentProposalGenerator
+            from .host import GemLabHost
+
+            session = Session(arguments.session)
+            host = GemLabHost(session)
+            measurement = _measure_from_arguments(host, session, arguments)
+            generator = AgentProposalGenerator(
+                arguments.generator_command, timeout=arguments.timeout,
+            ) if arguments.generator_command else None
+            result = host.generate_proposals(
+                measurement, count=arguments.count, generator=generator,
+            )
+            report = result.report
+            if arguments.json:
+                print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
+            else:
+                print(
+                    f"Generated {len(report['candidates'])} candidates: "
+                    f"{report['reviewable']} reviewable, {report['denied']} denied, "
+                    f"{report['duplicates']} duplicates."
+                )
+                for candidate in report["candidates"]:
+                    print(f"{candidate['action_id'] or 'duplicate'}: {candidate['status']} · {candidate['statement']}")
+                print("No candidate was executed or marked as verified.")
+                print(f"Run: {result.path}")
+                print(f"Hypothesis: {result.evidence['id']}")
+            return 0
         if arguments.command == "guard":
             from gem.events import Session
             from .cognition import unique_object
             from .host import GemLabHost
-            from .volume import VolumeBridge
 
             proposal_path = Path(arguments.proposal).expanduser().resolve(strict=True)
             if proposal_path.stat().st_size > 1024 * 1024:
@@ -201,14 +357,7 @@ def main(argv=None):
                 raise ValueError("proposal JSON must contain an object")
             session = Session(arguments.session)
             host = GemLabHost(session)
-            if arguments.distribution:
-                measurement = VolumeBridge(session).observe(
-                    arguments.distribution, thresholds=arguments.thresholds, key=arguments.key,
-                ).report
-            else:
-                measurement = host.measure_prediction(
-                    model_dir=arguments.model_dir, thresholds=arguments.thresholds,
-                ).report
+            measurement = _measure_from_arguments(host, session, arguments)
             result = host.review_proposal(
                 proposal, measurement, arguments.action_id, approve=arguments.approve,
             )

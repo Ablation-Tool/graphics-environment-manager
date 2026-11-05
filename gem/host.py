@@ -323,6 +323,16 @@ class GemLabHost:
         atomic_write(report_path, json.dumps(report, indent=2, ensure_ascii=False) + "\n")
         return PredictionRun(path, report, evidence)
 
+    def generate_proposals(self, measurement, count=4, generator=None):
+        from .generation import baseline_candidates, generate_and_review
+
+        if generator is None:
+            candidates = baseline_candidates(self.snapshot(), count)
+            metadata = {"mode": "deterministic-baseline", "prompt": ""}
+        else:
+            candidates, metadata = generator.generate(self.session, count)
+        return generate_and_review(self, measurement, candidates, metadata)
+
 
 class GemCommandBroker:
     COMMANDS = {"snapshot", "resolve", "select", "begin_selected_work", "export"}

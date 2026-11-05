@@ -853,6 +853,244 @@ class CognitiveGuardCase(unittest.TestCase):
             self.assertEqual(rejected, 2)
 
 
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "research measurement tests require NumPy")
+class ResearchMeasurementCase(unittest.TestCase):
+    def test_joint_horizon_counts_and_model_identity(self):
+        from gem.volume import VolumeBridge
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            current = root / "joint.npz"
+            previous = root / "previous.npz"
+            np.savez(previous, joint_probabilities=np.asarray([1.0, 0.0, 0.0, 0.0]))
+            np.savez(
+                current,
+                input_ids=np.asarray([1, 2]),
+                joint_probabilities=np.asarray([[0.40, 0.30], [0.20, 0.10]]),
+                model_id=np.asarray("research-model"),
+            )
+            session = Session(root / "session", "/bin/true")
+            result = VolumeBridge(session).observe(
+                current, previous=previous, key="joint_probabilities", horizon=2,
+            )
+            self.assertEqual(result.report["model"]["id"], "research-model")
+            self.assertEqual(result.report["horizon"], 2)
+            self.assertEqual(result.report["vocabulary_size"], 2)
+            self.assertEqual(result.report["joint_outcome_space"], 4)
+            self.assertFalse(result.report["approximate"])
+            entry = result.report["threshold_sweep"][1]
+            self.assertEqual(entry["accessible_volume"], 4)
+            self.assertEqual(entry["complement_volume"], 0)
+            self.assertEqual(entry["accessible_momentum"], 3)
+            with self.assertRaisesRegex(ValueError, "horizon=1"):
+                VolumeBridge(session).observe(
+                    current, key="joint_probabilities", horizon=2, actual_token_id=0,
+                )
+            single = root / "single.npz"
+            np.savez(single, probabilities=np.asarray([0.70, 0.20, 0.08, 0.02]))
+            bridge = VolumeBridge(session)
+            one_step = bridge.observe(single)
+            self.assertIsNone(one_step.report["previous_source"])
+            repeated_joint = bridge.observe(current, key="joint_probabilities", horizon=2)
+            self.assertEqual(repeated_joint.report["previous_source"]["path"], str(result.path / "probabilities.npz"))
+            self.assertEqual(repeated_joint.report["threshold_sweep"][1]["accessible_momentum"], 0)
+
+    def test_joint_shape_validation(self):
+        from gem.measurement import measure_joint_distribution
+
+        with self.assertRaises(ValueError):
+            measure_joint_distribution([0.5, 0.5], 2)
+        with self.assertRaises(ValueError):
+            measure_joint_distribution([0.5, 0.5], True)
+        with self.assertRaises(ValueError):
+            measure_joint_distribution([[0.5, 0.5], [0.0, 0.0]], 3)
+
+    def test_calibration_metrics_and_cli(self):
+        from gem.evaluation import calibration_metrics
+
+        records = [
+            {"max_probability": 0.9, "outcome": {"correct": True, "log_loss": 0.1, "brier_score": 0.1}},
+            {"max_probability": 0.8, "outcome": {"correct": True, "log_loss": 0.2, "brier_score": 0.2}},
+            {"max_probability": 0.2, "outcome": {"correct": False, "log_loss": 0.3, "brier_score": 0.3}},
+            {"max_probability": 0.1, "outcome": {"correct": False, "log_loss": 0.4, "brier_score": 0.4}},
+        ]
+        report = calibration_metrics(records, bins=2)
+        self.assertEqual(report["cases"], 4)
+        self.assertEqual(report["auroc_correctness"], 1.0)
+        self.assertEqual(report["auprc_correctness"], 1.0)
+        self.assertAlmostEqual(report["expected_calibration_error"], 0.15)
+        self.assertAlmostEqual(report["log_loss"], 0.25)
+        self.assertAlmostEqual(report["brier_score"], 0.25)
+        single = calibration_metrics(records[:1])
+        self.assertIsNone(single["auroc_correctness"])
+        self.assertEqual(single["auprc_correctness"], 1.0)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = []
+            for index, record in enumerate(records):
+                path = root / f"measurement-{index}.json"
+                path.write_text(json.dumps(record), encoding="utf-8")
+                paths.append(path)
+            output = root / "calibration.json"
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = gem_main([
+                    "calibrate", *(str(path) for path in paths),
+                    "--bins", "2", "--output", str(output),
+                ])
+            self.assertEqual(result, 0)
+            saved = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(saved["auroc_correctness"], 1.0)
+            original = output.read_text(encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                duplicate = gem_main([
+                    "calibrate", str(paths[0]), "--output", str(output),
+                ])
+            self.assertEqual(duplicate, 2)
+            self.assertEqual(output.read_text(encoding="utf-8"), original)
+
+    def test_linear_and_nonlinear_estimation(self):
+        from gem.estimation import ExtendedKalmanFilter, linear_filter
+
+        results = linear_filter(
+            [[1.0], [2.0], [3.0]],
+            [[1.0, 1.0], [0.0, 1.0]], [[0.001, 0.0], [0.0, 0.001]],
+            [[1.0, 0.0]], [[0.01]], [0.0, 1.0], np.eye(2),
+        )
+        self.assertEqual(len(results), 3)
+        self.assertAlmostEqual(results[-1]["state"][0], 3.0, places=2)
+        self.assertAlmostEqual(results[-1]["state"][1], 1.0, places=2)
+        self.assertTrue(np.all(np.linalg.eigvalsh(results[-1]["covariance"]) > 0))
+
+        estimator = ExtendedKalmanFilter([2.0], [[0.01]], measurement_model=lambda state: (
+            np.asarray([state[0] ** 2]), np.asarray([[2 * state[0]]]),
+        ))
+        estimator.predict([[1.0]], [[0.001]])
+        update = estimator.update([4.0], observation_covariance=[[0.01]])
+        self.assertAlmostEqual(update["state"][0], 2.0, places=1)
+        self.assertGreaterEqual(update["innovation"][0], 0.0)
+        with self.assertRaises(ValueError):
+            ExtendedKalmanFilter([1.0], [[1.0, 0.0]])
+
+    def test_estimate_cli_and_no_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            model = root / "model.json"
+            output = root / "estimate.json"
+            model.write_text(json.dumps({
+                "observations": [[1.0], [2.0], [3.0]],
+                "process_matrix": [[1.0, 1.0], [0.0, 1.0]],
+                "process_covariance": [[0.001, 0.0], [0.0, 0.001]],
+                "observation_matrix": [[1.0, 0.0]],
+                "observation_covariance": [[0.01]],
+                "initial_state": [0.0, 1.0],
+                "initial_covariance": [[1.0, 0.0], [0.0, 1.0]],
+            }), encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = gem_main(["estimate", str(model), "--output", str(output)])
+            self.assertEqual(result, 0)
+            report = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(report["observation_count"], 3)
+            self.assertAlmostEqual(report["final_state"][0], 3.0, places=2)
+            original = output.read_text(encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                duplicate = gem_main(["estimate", str(model), "--output", str(output)])
+            self.assertEqual(duplicate, 2)
+            self.assertEqual(output.read_text(encoding="utf-8"), original)
+
+
+@unittest.skipUnless(importlib.util.find_spec("numpy"), "generative tests require NumPy")
+class GenerativeCase(unittest.TestCase):
+    def measurement(self, session, path):
+        from gem.volume import VolumeBridge
+
+        np.savez(path, input_ids=np.asarray([1, 2]), probabilities=np.asarray([0.70, 0.20, 0.08, 0.02]))
+        return VolumeBridge(session).observe(path).report
+
+    def test_baseline_generation_is_review_only_and_repeatable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            session = Session(Path(directory) / "session", "/bin/true")
+            measurement = self.measurement(session, Path(directory) / "forecast.npz")
+            host = GemLabHost(session)
+            result = host.generate_proposals(measurement, count=4)
+            self.assertEqual(result.report["reviewable"], 4)
+            self.assertEqual(result.report["denied"], 0)
+            self.assertFalse(result.report["executed"])
+            self.assertEqual(result.evidence["type"], "hypothesis")
+            self.assertTrue(all(candidate["score"] is None for candidate in result.report["candidates"]))
+            self.assertTrue(all(not candidate["guard_report"]["executed"] for candidate in result.report["candidates"]))
+            self.assertTrue((result.path / "generation.json").is_file())
+            self.assertIsNone(session.current_state().get("last_operation"))
+            first_action = result.report["candidates"][0]["action_id"]
+            repeated = host.generate_proposals(measurement, count=1)
+            self.assertEqual(repeated.report["reviewable"], 1)
+            self.assertNotEqual(repeated.report["candidates"][0]["action_id"], first_action)
+
+    def test_external_generator_deduplicates_and_denies_stale_work(self):
+        from gem.generation import AgentProposalGenerator
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "generator.py"
+            script.write_text(textwrap.dedent('''
+                import json
+                print(json.dumps({"hypotheses": [
+                    {"statement": "Read state", "proposal": {"command": "snapshot"}, "rationale": "baseline"},
+                    {"statement": "Read state again", "proposal": {"command": "snapshot"}, "rationale": "duplicate"},
+                    {"statement": "Stale work", "proposal": {"command": "begin_selected_work", "expected_id": "wrong", "expected_revision": 999}, "rationale": "must deny"}
+                ]}))
+            '''), encoding="utf-8")
+            session = Session(root / "session", "/bin/true")
+            measurement = self.measurement(session, root / "forecast.npz")
+            generator = AgentProposalGenerator([sys.executable, str(script)])
+            result = GemLabHost(session).generate_proposals(measurement, count=3, generator=generator)
+            self.assertEqual(result.report["generator"]["mode"], "external-agent")
+            self.assertEqual(result.report["reviewable"], 1)
+            self.assertEqual(result.report["denied"], 1)
+            self.assertEqual(result.report["duplicates"], 1)
+            self.assertTrue(all(not candidate.get("guard_report", {}).get("executed", False) for candidate in result.report["candidates"] if candidate["guard_report"] is not None))
+            prompt = (result.path / "generation-prompt.txt").read_text(encoding="utf-8")
+            self.assertIn("untrusted data", prompt)
+            self.assertIn("RIGHT-SIDE GENERATION INSTRUCTIONS", prompt)
+            from hashlib import sha256
+            self.assertEqual(result.report["generator"]["prompt_sha256"], sha256(prompt.encode("utf-8")).hexdigest())
+
+    def test_external_generator_rejects_invalid_output_and_self_scores(self):
+        from gem.generation import AgentProposalGenerator
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            session = Session(root / "session", "/bin/true")
+            measurement = self.measurement(session, root / "forecast.npz")
+            for content in (
+                "not json",
+                '{"hypotheses":[{"statement":"self scored","proposal":{"command":"snapshot"},"score":1.0}]}',
+            ):
+                script = root / "generator.py"
+                script.write_text(f"print({content!r})\n", encoding="utf-8")
+                generator = AgentProposalGenerator([sys.executable, str(script)])
+                with self.subTest(content=content), self.assertRaises(ValueError):
+                    GemLabHost(session).generate_proposals(measurement, count=1, generator=generator)
+
+    def test_generate_cli_uses_baseline_without_approval(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            session = Session(root / "session", "/bin/true")
+            measurement_path = root / "forecast.npz"
+            self.measurement(session, measurement_path)
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                result = gem_main([
+                    "generate", "--session", str(session.root),
+                    "--distribution", str(measurement_path), "--count", "2", "--json",
+                ])
+            self.assertEqual(result, 0)
+            report = json.loads(output.getvalue())
+            self.assertEqual(report["generator"]["mode"], "deterministic-baseline")
+            self.assertEqual(report["reviewable"], 2)
+            self.assertFalse(report["executed"])
+
+
 @unittest.skipUnless(importlib.util.find_spec("numpy"), "landmark tests require NumPy")
 class LandmarkCase(unittest.TestCase):
     def setUp(self):

@@ -208,13 +208,16 @@ def _next_run_directory(root, digest):
     raise FileExistsError(f"no available prediction run directory under {root}")
 
 
-def _atomic_savez(path, input_ids, probabilities):
+def _atomic_savez(path, input_ids, probabilities, model_id=None):
     np = _numpy()
     temporary = None
     try:
         with tempfile.NamedTemporaryFile("wb", dir=path.parent, prefix=f".{path.name}.", delete=False) as stream:
             temporary = Path(stream.name)
-            np.savez_compressed(stream, input_ids=input_ids, probabilities=probabilities)
+            arrays = {"input_ids": input_ids, "probabilities": probabilities}
+            if model_id is not None:
+                arrays["model_id"] = np.asarray(model_id)
+            np.savez_compressed(stream, **arrays)
             stream.flush()
             os.fsync(stream.fileno())
         temporary.replace(path)

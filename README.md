@@ -185,17 +185,20 @@ SVG and VDI use the Python standard library. PNG and native graphical views requ
 <details>
 <summary><strong>Unified analytical engine</strong></summary>
 
-The analytical engine uses one measurement kernel for live ONNX forecasts and saved NPZ distributions. It records accessible volume, complements, entropy, momentum, and optional observed-token scoring. Existing prediction, steering, tournament, and landmark workflows share the same evidence model.
+The analytical engine uses one measurement kernel for live ONNX forecasts and saved NPZ distributions. It records accessible volume, complements, entropy, momentum, exact multi-horizon joint counts, and optional observed-token scoring. Existing prediction, steering, tournament, and landmark workflows share the same evidence model.
 
-`gem volume` adds NPZ feedback with independent current/previous keys and no-overwrite reports. `gem guard` binds a forecast to the exact target, selection, revision, proposal, and action ID. Valid proposals remain review-only unless `--approve` is supplied; unsupported commands and stale or duplicate proposals are denied.
+`gem volume` adds NPZ feedback with independent current/previous keys and no-overwrite reports. `gem calibrate` evaluates observed confidence and correctness. `gem estimate` applies an explicit linear state-space model or direct nonlinear EKF callbacks. `gem generate` produces bounded baseline or external-agent hypotheses and sends every unique proposal through the guard without executing it. `gem guard` binds a forecast to the exact target, selection, revision, proposal, and action ID; only a separate explicit `--approve` can execute a valid proposal.
 
 ```bash
-gem volume current.npz --previous earlier.npz --session /path/to/session
+gem volume joint.npz --key joint_probabilities --horizon 2 --session /path/to/session
+gem calibrate measurement-1.json measurement-2.json --bins 10
+gem estimate state-space.json
+gem generate --session /path/to/session --distribution current.npz --count 4
 gem guard proposal.json --action-id proposal-001 \
   --session /path/to/session --distribution current.npz
 ```
 
-See [COGNITION.md](COGNITION.md) for the architecture, supported proposal schema, approval behavior, and the boundary for a future generative component. This is an analytical environment, not a claim of consciousness, learning, or automatic correctness.
+See [COGNITION.md](COGNITION.md) for the analytical and generative architecture, joint-distribution requirements, calibration semantics, supported proposal schema, and approval behavior. This is a model-assisted environment, not a claim of consciousness, learning, or automatic correctness.
 
 </details>
 

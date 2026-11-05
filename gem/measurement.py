@@ -142,6 +142,58 @@ def measure_distribution(probabilities, thresholds=DEFAULT_THRESHOLDS, previous=
     return report
 
 
+def _joint_values(probabilities, horizon, vocabulary_size):
+    np = _numpy()
+    if isinstance(horizon, bool) or not isinstance(horizon, (int, np.integer)) or not 1 <= horizon <= 8:
+        raise ValueError("horizon must be an integer from 1 to 8")
+    values = np.asarray(probabilities, dtype=np.float64)
+    if horizon == 1:
+        if values.ndim != 1:
+            raise ValueError("a one-step distribution must be one-dimensional")
+        return validate_probabilities(values), len(values)
+    if values.ndim == 1:
+        if vocabulary_size is None:
+            vocabulary_size = round(len(values) ** (1 / horizon))
+        if isinstance(vocabulary_size, bool) or not isinstance(vocabulary_size, (int, np.integer)):
+            raise ValueError("vocabulary_size must be a positive integer")
+        if vocabulary_size < 1 or vocabulary_size ** horizon != len(values):
+            raise ValueError("flat joint distribution length must equal vocabulary_size ** horizon")
+    elif values.ndim == horizon:
+        if any(size < 1 for size in values.shape) or len(set(values.shape)) != 1:
+            raise ValueError("joint distribution axes must have equal nonzero vocabulary dimensions")
+        inferred = values.shape[0]
+        if vocabulary_size is not None and vocabulary_size != inferred:
+            raise ValueError("vocabulary_size does not match the joint distribution shape")
+        vocabulary_size = inferred
+    else:
+        raise ValueError("joint distribution must be flat or have exactly horizon dimensions")
+    return validate_probabilities(values.reshape(-1)), int(vocabulary_size)
+
+
+def measure_joint_distribution(probabilities, horizon, thresholds=DEFAULT_THRESHOLDS, previous=None,
+                               vocabulary_size=None, minimum=1, maximum=4):
+    if isinstance(horizon, bool):
+        raise ValueError("horizon must be an integer, not a boolean")
+    if horizon == 1:
+        return measure_distribution(
+            probabilities, thresholds, previous=previous, minimum=minimum, maximum=maximum,
+        )
+    values, vocabulary_size = _joint_values(probabilities, horizon, vocabulary_size)
+    previous_values = None
+    if previous is not None:
+        previous_values, previous_vocabulary = _joint_values(previous, horizon, vocabulary_size)
+        if previous_vocabulary != vocabulary_size:
+            raise ValueError("current and previous joint distributions must use the same vocabulary")
+    report = measure_distribution(
+        values, thresholds, previous=previous_values, minimum=minimum, maximum=maximum,
+    )
+    report["horizon"] = int(horizon)
+    report["vocabulary_size"] = vocabulary_size
+    report["joint_outcome_space"] = len(values)
+    report["approximate"] = False
+    return report
+
+
 def canonical_json(document):
     return json.dumps(document, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":"))
 

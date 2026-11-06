@@ -21,6 +21,12 @@ Two randomizers are supported:
 
 The current and next pieces are both drawn during initialization, so the initial report has five pieces remaining in the bag. The PRNG state is included in snapshots, allowing an exact replay rather than merely a similar-looking game.
 
+## Computational complexity boundary
+
+Generalized Tetris decision problems can be **NP-complete**, depending on the board, rules, and objective. Some restricted variants are also hard, while others are polynomial. A fixed 10×20 board has a finite state space, but that does not make exhaustive placement search practical or turn the implementation into an NP-completeness proof.
+
+This experiment performs legal moves, gravity, collision checks, and exact randomizer arithmetic. It does not solve board clearing, survival, optimal placement, or approximation problems. Exact bag probabilities are not claims about computational hardness. See [Demaine, Hohenberger, and Liben-Nowell’s Tetris work](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2008/cdc627fbd05edbe0e9a480e45c8c827e_lec14.pdf) and the later [restricted-board results](https://arxiv.org/html/2009.14336v1) for the distinctions.
+
 ## Exact accessible outcomes
 
 For a next-piece distribution \(p\), the accessible set at threshold \(\tau\) is

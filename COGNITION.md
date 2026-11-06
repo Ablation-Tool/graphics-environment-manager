@@ -282,6 +282,8 @@ The scene uses original broken elliptical traces, a circled Z, and deliberate ne
 
 The `uniform` model assigns each type probability \(1/7\) independently. The `bag` model shuffles one of each type and samples without replacement. Current and next pieces are both drawn at initialization. Snapshots include the PRNG state, so replay is exact.
 
+Generalized Tetris decision problems can be NP-complete, with hardness depending on the board, rules, and objective. This engine does not solve board clearing, survival, optimal placement, or approximation problems. Its fixed 10×20 state space is finite, and exact randomizer arithmetic is not a claim about computational hardness.
+
 For next-piece probabilities \(p_i\),
 
 \[

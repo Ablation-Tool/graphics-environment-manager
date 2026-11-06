@@ -104,6 +104,14 @@ See [the reverse-engineering notes, equations, controls, and limits](docs/TETRIS
 
 </details>
 
+## Visual studies and provenance
+
+![Projection Dialogue](docs/images/projection-dialogue.png)
+
+The visual collection includes original executable studies of projection, probability, Walsh patterns, layered geometry, and golden-ratio composition. It also includes user-supplied screenshots and the Allen CCF anatomical illustrations, including the Jenga exploded and pull views.
+
+See [the complete artwork and provenance gallery](docs/ARTWORK.md) for source boundaries, atlas citation, and which pieces are synthetic, generated, or user-supplied.
+
 ## Origin and naming
 
 **Graphics Environment Manager did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.

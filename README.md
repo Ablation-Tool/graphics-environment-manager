@@ -54,6 +54,34 @@ See [the mathematical model and limits](COGNITION.md#second-eye-parallax-and-dep
 
 </details>
 
+<details>
+<summary><strong>Halo Field: two projections, six parameters, no forced agreement</strong></summary>
+
+![Halo Field](docs/images/halo-field.png)
+
+`gem halo` is an original synthetic pose experiment. A non-anatomical cloud of **450 points** is rotated and translated, then rendered at **0° and 65°** with orthographic projection, exponential depth attenuation, and separable `[1,2,1]` smoothing. Two independent metrics compare candidate projections with the fixed target observations:
+
+- **L2 pixels:** mean squared differences over normalized 48×48 images.
+- **Walsh template:** pooling to a 4×4 grid, a Boolean threshold at 35% of the maximum pooled value, a signed 16-point Walsh transform, then normalized and sorted spectral magnitudes. Sorting deliberately makes this a lossy baseline.
+
+For each metric, 24 moment-ranked starts are reduced to three bounded coordinate-descent searches over `rx, ry, rz, tx, ty, tz`. The truth is not a start. Candidate projections are noise-free; optional noise belongs to the fixed observations. Candidate summaries cross the report boundary without averaging their scores.
+
+```bash
+python -m pip install -e '.[halo]'
+python -m gem halo
+python -m gem halo --metric both --angle 65 --noise 0 --seed 7 --output halo.json
+python -m gem halo --metric l2 --output halo.svg
+python -m gem halo --metric walsh --output halo.gem
+```
+
+The preserved default result is intentionally split. L2 obtains **0.00285 translation error** and **4.27° rotation error**. The Walsh search ties its three candidates at **0.0625**, selects a pose **79.61°** from the truth, and stalls even though the truth's template distance is **0**. This is a coarse-template/optimizer plateau failure, not evidence that every spectral representation must fail. L2's result is one synthetic case, not a universal pose solver.
+
+Score gaps and ties expose ambiguity; they are not posterior probabilities. The native window provides metric, angle, noise, and seed controls plus JSON/SVG/PNG/GEM VDI export. Existing files are not overwritten. There is no medical data, anatomical reconstruction, physical X-ray simulation, CNN training, distributed solver, autonomous action, or encryption claim.
+
+The original broken-ellipse composition and circled Z were visually inspired by the circle construction in the March 1984 *DR Draw User's Guide* and Zoe's existing mark. No book figure or manual content is bundled. See [the equations and limits](COGNITION.md#halo-field-projection-and-competing-templates) and [the complete default evidence](evidence/halo/experiment.json).
+
+</details>
+
 ## Origin and naming
 
 **Graphics Environment Manager did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.

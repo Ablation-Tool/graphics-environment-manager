@@ -19,6 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 drop = ["tkinterdnd2==0.7.0"]
 windows = ["pywinpty>=2,<3; sys_platform == 'win32'"]
+halo = ["numpy>=2.3.5,<3"]
 predict = [
     "numpy>=2.3.5,<3",
     "onnxruntime>=1.31.1,<2",

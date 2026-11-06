@@ -241,16 +241,51 @@ python -m gem eye --output second-eye.json
 
 The native `gem.eye_view` window provides focus, aperture, and baseline controls and JSON/SVG/PNG/GEM VDI export. `gem.eye` produces the same scene and report without accessing a camera. `tools.test_eye` checks known geometry, depth sensitivity, defocus, unbounded far depth of field, scene/VDI constraints, no-overwrite exports, and native controls. The preserved default measurement is [`evidence/eye/synthetic-stereo.json`](evidence/eye/synthetic-stereo.json).
 
+## Halo Field: projection and competing templates
+
+`gem.halo` is an original, bounded six-parameter pose experiment over a synthetic non-anatomical cloud of 450 points. It is not a medical reconstruction, physical X-ray simulator, diagnostic tool, encryption construction, or model of human sight. NumPy is available through the `halo` package extra; no deep-learning framework or PETSc installation is used.
+
+A pose uses Euler rotations \(R=R_zR_yR_x\) and a translation. For view angle \(\theta\), a transformed point \((x,y,z)\) supplies
+
+\[
+u_\theta=x\cos\theta-y\sin\theta,\qquad d_\theta=x\sin\theta+y\cos\theta.
+\]
+
+The projection bins \((z,u_\theta)\) into a 48×48 image with weights \(e^{-0.35d_\theta}\). Separable `[1,2,1]` smoothing and normalization follow. The default target contains views at 0° and 65°. Optional bounded noise is added only to those fixed observations; candidate projections remain noise-free.
+
+The pixel metric is the sum over views of mean squared normalized-pixel differences. The independent **Walsh template** performs the following lossy transformation:
+
+1. Mean-pool a projection to a 4×4 grid.
+2. Set each Boolean value by \(b_k=\mathbf 1[\bar P_k>0.35\max(\bar P)]\).
+3. Compute the signed Walsh coefficients \(W(a)=\sum_x(-1)^{b_x}(-1)^{a\cdot x}\).
+4. Take absolute values, L2-normalize the 16 coefficients, and sort them.
+5. Compare two templates by mean absolute difference and sum over the two views.
+
+Sorting discards coefficient identity. This is intentionally an inspectable baseline, not a claim that a Walsh descriptor is rotation-invariant or sufficient for pose recovery. The mathematical self-check uses \(x_0x_1\oplus x_2x_3\): all 16 Walsh coefficients have magnitude 4 and its standard four-variable nonlinearity is \(2^3-4/2=6\). That bent-function identity verifies the transform; it does not validate pose estimation.
+
+Each metric independently ranks 24 starts (identity plus 23 seeded starts) by image moments, then retains three bounded coordinate-descent searches. Rotation steps are 12, 6, 3, 1.5, 0.75, and 0.25 degrees; translation steps are the corresponding values divided by 60. Rotations are bounded to ±75° and translations to ±0.45. The synthetic truth \((17,-21,27,0.10,-0.08,0.09)\) is not an optimizer start. Three local candidates and their within-metric score gaps are retained.
+
+The default deterministic run has these measured outcomes:
+
+- **L2:** translation error 0.0028477739, rotation error 4.2650°, best score \(6.50247\times10^{-8}\), next-score gap \(1.04127\times10^{-6}\).
+- **Walsh template:** translation error 0.0821079546, rotation error 79.6067°, best score 0.0625, next-score gap 0; all three retained candidates tie.
+- The truth's Walsh score is 0, below the search result. The search therefore stalls on a plateau; this negative result neither validates the Walsh search nor rules out other spectral representations or optimizers.
+- The independently selected poses differ by 79.7266° of rotation. Their scores use different units and are never averaged or compared as if they were calibrated probabilities.
+
+The boundary exchange is limited to complete candidate summaries in the report. There is no distributed solver. Score gaps and ties indicate ambiguity among retained local searches, not posteriors or confidence intervals. One successful L2 case is not evidence of universal recovery, noisy robustness, medical utility, or superiority over learned models. No CNN, regression forest, or ridge baseline is trained here.
+
+The scene uses original broken elliptical traces, a circled Z, and deliberate negative space. The March 1984 *DR Draw User's Guide* circle construction and Zoe's existing circled mark motivated the composition; no source figure is copied into the repository. `gem halo` opens controls for metric, view angle, observation noise, and seed. `--output` exports JSON, SVG, PNG, or GEM VDI without overwriting existing files. The complete default report is [`evidence/halo/experiment.json`](evidence/halo/experiment.json).
+
 ## Verification and remaining limits
 
 ```bash
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
-python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo
 
 stress/nested_x11.sh env PYTHONPATH=. \
-  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo
 ```
 
 The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.

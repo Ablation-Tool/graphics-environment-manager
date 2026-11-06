@@ -86,6 +86,15 @@ def _parser():
     eye.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
     eye.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
 
+    halo = commands.add_parser("halo", help="compare independent pose searches from two synthetic projections")
+    halo.add_argument("--metric", choices=("both", "l2", "walsh"), default="both", help="similarity metric; never averaged")
+    halo.add_argument("--angle", type=float, default=65, help="parallax view angle in degrees, 1-89")
+    halo.add_argument("--noise", type=float, default=0.0, help="observation noise standard deviation, 0-0.05")
+    halo.add_argument("--seed", type=int, default=7, help="deterministic seed, 0-999999")
+    halo.add_argument("--output", help="export .json, .svg, .png, or .gem instead of opening the native instrument")
+    halo.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    halo.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
+
     replay_parser = commands.add_parser("replay", help="recompute verification from run artifacts")
     replay_parser.add_argument("run", help="GEM run directory")
     replay_parser.add_argument("--json", action="store_true", help="emit the complete recomputed report")
@@ -283,6 +292,28 @@ def main(argv=None):
             else:
                 raise ValueError("eye output format must be json, svg, png, or gem")
             _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "actual_camera_used": False, "executed": False})
+            return 0
+        if arguments.command == "halo":
+            from .halo import experiment, halo_scene
+            report = experiment(metric=arguments.metric, view_angle=arguments.angle, noise=arguments.noise, seed=arguments.seed)
+            if not arguments.output:
+                from .halo_view import launch_halo
+                launch_halo(metric=arguments.metric, view_angle=arguments.angle, noise=arguments.noise, seed=arguments.seed)
+                return 0
+            scene, _ = halo_scene(report)
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                _emit_json(report, output)
+            elif kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("halo output format must be json, svg, png, or gem")
+            _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "autonomous_action": False})
             return 0
         if arguments.command == "os":
             if arguments.output:

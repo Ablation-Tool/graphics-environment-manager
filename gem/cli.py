@@ -95,6 +95,21 @@ def _parser():
     halo.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
     halo.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
 
+    tetris = commands.add_parser("tetris", help="play and measure a bounded deterministic Tetris probability field")
+    tetris.add_argument("--seed", type=int, default=7, help="deterministic unsigned 64-bit seed")
+    tetris.add_argument("--randomizer", choices=("bag", "uniform"), default="bag", help="piece distribution model")
+    tetris.add_argument("--horizon", type=int, default=1, choices=(1, 2, 3), help="joint outcome horizon, 1-3 pieces")
+    tetris.add_argument("--output", help="export .json, .svg, .png, or .gem instead of opening the native instrument")
+    tetris.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    tetris.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
+
+    feed = commands.add_parser("feed", help="evaluate simple black-box models of binary like/not-like observations")
+    feed.add_argument("input", help="chronological JSON booleans or objects with outcome like/not_like")
+    feed.add_argument("--alpha", type=float, default=.5, help="symmetric Dirichlet smoothing strength, greater than zero")
+    feed.add_argument("--train", type=int, default=24, help="initial chronological training observations, at least 8")
+    feed.add_argument("--test", type=int, default=8, help="observations per later held-out window, at least 1")
+    feed.add_argument("--output", help="new JSON evidence path; existing files are not overwritten")
+
     replay_parser = commands.add_parser("replay", help="recompute verification from run artifacts")
     replay_parser.add_argument("run", help="GEM run directory")
     replay_parser.add_argument("--json", action="store_true", help="emit the complete recomputed report")
@@ -314,6 +329,39 @@ def main(argv=None):
             else:
                 raise ValueError("halo output format must be json, svg, png, or gem")
             _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "autonomous_action": False})
+            return 0
+        if arguments.command == "tetris":
+            from .tetris import TetrisGame, tetris_report, tetris_scene
+            game = TetrisGame(seed=arguments.seed, randomizer=arguments.randomizer)
+            if not arguments.output:
+                from .tetris_view import launch_tetris
+                launch_tetris(game)
+                return 0
+            report = tetris_report(game, horizon=arguments.horizon)
+            scene, _ = tetris_scene(report)
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                _emit_json(report, output)
+            elif kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("tetris output format must be json, svg, png, or gem")
+            _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "autonomous_action": False})
+            return 0
+        if arguments.command == "feed":
+            from .cognition import unique_object
+            from .feed import evaluate_feed
+            source = Path(arguments.input).expanduser().resolve(strict=True)
+            if source.stat().st_size > 1024 * 1024:
+                raise ValueError("feed observation input exceeds the 1 MiB limit")
+            events = json.loads(source.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            report = evaluate_feed(events, alpha=arguments.alpha, trial_train=arguments.train, trial_test=arguments.test)
+            _emit_json(report, arguments.output)
             return 0
         if arguments.command == "os":
             if arguments.output:

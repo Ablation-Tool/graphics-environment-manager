@@ -82,6 +82,28 @@ The original broken-ellipse composition and circled Z were visually inspired by 
 
 </details>
 
+<details>
+<summary><strong>Bounded Tetris: exact uncertainty and black-box experiments</strong></summary>
+
+![Bounded Tetris](docs/images/bounded-tetris.png)
+
+`gem tetris` opens an original, deterministic 10×20 Tetris sandbox. Seven tetromino types, normalized rotations, line clearing, levels, and two explicit randomizers make probability measurable rather than vaguely “random.” **Uniform** draws are independent; **bag** draws sample each type once without replacement. PRNG state and snapshot hashes support exact replay.
+
+```bash
+python -m gem tetris
+python -m gem tetris --randomizer uniform --horizon 2 --output tetris.json
+python -m gem tetris --horizon 2 --output tetris.svg
+python -m gem feed observations.json --output feed-report.json
+```
+
+At the preserved seed, five pieces remain and there are **20 equally likely two-piece sequences**, each at **1/20**. Strict threshold comparison gives 20 accessible outcomes at 0.02 and zero at 0.05. This is exact arithmetic under the declared randomizer, not a prediction of winning.
+
+A separate `gem feed` command compares independence, first-order, and second-order binary like/not-like models using expanding chronological train windows and disjoint later tests with Dirichlet smoothing. It evaluates candidate models rather than claiming to recover TikTok's proprietary algorithm or causation.
+
+See [the reverse-engineering notes, equations, controls, and limits](docs/TETRIS.md), [Tetris evidence](evidence/tetris/experiment.json), and [the synthetic feed result](evidence/feed/report.json). The reference implementation was Juliano Fernandes's MIT-licensed `julianolf/tetris`; no reference code or official ROM is bundled.
+
+</details>
+
 ## Origin and naming
 
 **Graphics Environment Manager did not originate with this repository.** The name honors the original **Graphics Environment Manager**, developed by **Digital Research** with **Lee Jay Lorenzen** and first released on **February 28, 1985**. [Gary Kildall](https://en.wikipedia.org/wiki/Gary_Kildall) oversaw its creation at Digital Research. [Dorothy McEwen Kildall](https://en.wikipedia.org/wiki/Dorothy_McEwen_Kildall) co-founded Digital Research and managed the company's marketing and daily operations.

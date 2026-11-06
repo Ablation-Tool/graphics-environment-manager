@@ -276,16 +276,38 @@ The boundary exchange is limited to complete candidate summaries in the report. 
 
 The scene uses original broken elliptical traces, a circled Z, and deliberate negative space. The March 1984 *DR Draw User's Guide* circle construction and Zoe's existing circled mark motivated the composition; no source figure is copied into the repository. `gem halo` opens controls for metric, view angle, observation noise, and seed. `--output` exports JSON, SVG, PNG, or GEM VDI without overwriting existing files. The complete default report is [`evidence/halo/experiment.json`](evidence/halo/experiment.json).
 
+## Bounded Tetris probability field
+
+`gem.tetris` is an original deterministic 10×20 game model with normalized four-cell tetromino rotations. It is not an official Tetris implementation or a full guideline clone. Juliano Fernandes's MIT-licensed `julianolf/tetris` supplied the behavioral reference; its use of `random.choice` and lack of seed injection motivated explicit alternatives rather than copied code.
+
+The `uniform` model assigns each type probability \(1/7\) independently. The `bag` model shuffles one of each type and samples without replacement. Current and next pieces are both drawn at initialization. Snapshots include the PRNG state, so replay is exact.
+
+For next-piece probabilities \(p_i\),
+
+\[
+A_\tau(S)=\sum_{i=1}^{7}\mathbf 1[p_i>\tau].
+\]
+
+For \(r\) remaining pieces, a bag has \(r\) equally likely next outcomes. Two-piece sequences have support \(r(r-1)\), with each ordered sequence assigned probability \(1/(r(r-1))\). Uniform draws instead have \(7^h\) sequences at horizon \(h\). Joint outcomes are enumerated exactly through three pieces, including bag refills. Accessible and complement counts use strict \(p_i>\tau\), never posterior probabilities or predictions of winning.
+
+The initial preserved report has five remaining pieces and 20 ordered two-piece sequences at probability 1/20. Thus \(A_{0.02}=20\) and \(A_{0.05}=0\). An equal-prior candidate comparison assigns posterior 0.9939173263 to the bag after one observation of every type, but that does not identify an unknown implementation's RNG.
+
+`gem.tetris_view` supplies movement, rotation, soft/hard drop, pause, single-step, deterministic reset, model switching, and JSON/SVG/PNG/GEM VDI export. VR is inactive and no headset is accessed. Any future adapter must justify itself through bodily interaction or spatial audio rather than decoration. See [`docs/TETRIS.md`](docs/TETRIS.md) and [`evidence/tetris/experiment.json`](evidence/tetris/experiment.json).
+
+`gem.feed` is a separate black-box experiment for chronological binary observations. It compares independence, first-order, and second-order conditional models with symmetric Dirichlet smoothing. Expanding training windows never include later test observations. It evaluates whether history improves held-out log loss, Brier score, or accuracy; it does not reveal TikTok internals or establish causation. The alternating synthetic result is 0.693147 for independence, 0.114625 for first order, and 0.198193 for second order. See [`evidence/feed/report.json`](evidence/feed/report.json).
+
+A possible passive-RC biological experiment belongs outside this game model. Ohm's law alone is not a universal model of neural activity, and sensor potentials do not uniquely determine internal brain impulses. No biological or clinical claim is made.
+
 ## Verification and remaining limits
 
 ```bash
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
-python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo tools.test_tetris tools.test_feed
 
 stress/nested_x11.sh env PYTHONPATH=. \
-  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo tools.test_tetris tools.test_feed
 ```
 
 The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.

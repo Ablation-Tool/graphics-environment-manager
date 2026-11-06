@@ -10,6 +10,7 @@ This gallery distinguishes original executable scenes, atlas-derived illustratio
 - `layered-field.{png,svg,gem}` — original exploded blocks with side scale \(L/L_{\max}\) and volume scale \((L/L_{\max})^3\). Illustrative geometry, not an anatomical model.
 - `projection-dialogue.{png,svg,gem}` — original synthetic six-pose projection, similarity metric, and bounded optimizer. It uses a point cloud, not a clinical reconstruction or X-ray simulation.
 - `proportional-field.{png,svg,gem}` — exact golden-ratio geometry with \(\varphi=(1+\sqrt5)/2\), nested rectangles, and an explicit warning that proportion does not guarantee beauty. The user-supplied [Mathematics and architecture](https://en.wikipedia.org/wiki/Mathematics_and_architecture) reference motivates the spatial ratios.
+- `cognitive-field.{png,svg,gem}` — original information-flow study with sensory encoding, bounded working memory, declarative/procedural boundaries, layered state transitions, and an epistemic firewall. This illustration is not an ACT-R implementation or a consciousness model; the working instrument is Zoe's Cognitive Field module.
 
 These scenes use the existing GEM Spatial IR and were checked with `gem.geometry.verify` and `gem.runner.verify_vdi` before export.
 

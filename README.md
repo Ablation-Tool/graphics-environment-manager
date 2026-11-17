@@ -55,6 +55,47 @@ See [the mathematical model and limits](COGNITION.md#second-eye-parallax-and-dep
 </details>
 
 <details>
+<summary><strong>Shared perception and imagery: observe, predict, plan, reconstruct</strong></summary>
+
+`gem imagery` combines calibrated stereo triangulation, a shared world-centered 3D state, imagined future views, live Dijkstra navigation, geometric vividness, and accessible-volume candidate gating. Every prediction is scored against the subsequent observation before state fusion. Observed, imagined, and reconstructed records remain separate.
+
+```bash
+python -m pip install -e '.[imagery]'
+python -m gem imagery --live --steps 4
+python -m gem imagery --steps 4 --output imagery.json
+python -m gem imagery --previous imagery.json --steps 2 --output guided.svg
+python -m gem imagery --input stereo-observations.json --output reconstruction.gem
+python -m gem imagery --layout network --output cyclic-field.png
+python -m gem imagery --template examples/cyclic-flow.json --output my-cyclic-field.svg
+```
+
+The input schema supports declared view angles, explicit forecast probabilities, synthetic 3D points, or supplied per-view stereo measurements. Accessible volume selects the live candidate set \(V_\tau=\{v:p_v>\tau\}\); it does not score correctness or authorize actions. Historical prediction error increases Dijkstra transition costs on later runs. Geometric vividness records detail, prediction precision, and reconstruction stability—not emotion or subjective experience. The default precision fusion uses \(w=\sigma_q^{-1/2}\), with arithmetic fusion available for comparison. It reduces four-view mean reconstruction error from **2.336 mm** to **2.306 mm** in the declared synthetic benchmark; this small measured gain is not evidence of universal superiority or general visual intelligence.
+
+The optional **Cyclic Field** view arranges perception, imagery/thinking, learning, and navigation/action as a symmetric outer cycle around shared geometry and vividness. Its editable JSON template can reorder the cycle and change labels, transition text, and palette while preserving live metrics and provenance. It is a creative visualization template, not a creativity score or a claim of aesthetic optimization.
+
+See [the architecture, input schema, creative template, and limits](COGNITION.md#shared-perception-and-imagery).
+
+</details>
+
+<details>
+<summary><strong>Native cognitive field: SPU, texture, execution imagery, and Beowulf structure</strong></summary>
+
+`gem cognition` unifies real SPU ELF decoding, local-storage semantics, pipeline/latency projections, Dijkstra execution paths, Ghidoni-style structural texture, volumetric skeletons, stereo reconstruction, and historical learning in one native cognitive field. Observed bytes remain distinct from imagined schedules and paths.
+
+```bash
+python -m pip install -e '.[cognition]'
+python -m gem cognition --output cognition.json
+python -m gem cognition --spu /path/to/spu.elf --steps 4 --output cognition.png
+python -m gem cognition --spu /path/to/spu.elf --texture structural-image.npz --benchmark 5 --output cognition.gem
+```
+
+SPU execution imagery includes instruction-latency paths and a bounded dual-issue projection with explicit unknowns. Roofline execution planning uses \(T_{\min}\geq\max(F/R,M/B)\) with declared DCT, FFT, and matrix workload assumptions. CPU calibration records actual DCT timings and achieved GFLOP/s and bandwidth; NVIDIA cluster profiles remain reference-only unless hardware execution is independently validated. Exact priority-queue Dijkstra stays on the CPU path rather than being replaced by an unproven parallel substitute. Texture descriptors use normalized Dijkstra cost versus normalized L1 distance, with the zero-distance seed excluded. Volumetric skeletons retain the original cyclic graph while recording the selected predecessor tree. PPE/SPE/MFC/EIB relationships form the declared Beowulf structural model; they are not presented as a cluster runtime trace.
+
+The Cyclic Field visualization includes actual SPU instruction counts, texture entropy, timing coverage, stereo vividness, and navigation. JSON exports retain the complete SPU, texture, stereo, and provenance evidence. See [the native cognitive architecture and limits](COGNITION.md#native-shared-cognitive-field).
+
+</details>
+
+<details>
 <summary><strong>Halo Field: two projections, six parameters, no forced agreement</strong></summary>
 
 ![Halo Field](docs/images/halo-field.png)

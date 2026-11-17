@@ -86,6 +86,29 @@ def _parser():
     eye.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
     eye.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
 
+    imagery = commands.add_parser("imagery", help="run shared stereo perception, imagery, and Dijkstra view planning")
+    imagery.add_argument("--input", help="JSON scene and optional supplied stereo observations; default: synthetic scene")
+    imagery.add_argument("--previous", help="earlier imagery JSON report used for historical transition costs")
+    imagery.add_argument("--steps", type=int, default=3, help="observations to acquire, from 1 to 8")
+    imagery.add_argument("--output", help="export .json, .svg, .png, or .gem instead of printing the report")
+    imagery.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    imagery.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
+    imagery.add_argument("--json", action="store_true", help="print the complete report when no output is supplied")
+    imagery.add_argument("--live", action="store_true", help="stream each observe-imagine-plan cycle as JSON Lines")
+    imagery.add_argument("--layout", choices=("panels", "network"), default="panels", help="visual layout for exported scenes")
+    imagery.add_argument("--template", help="cyclic-flow JSON template; implies --layout network")
+
+    cognition = commands.add_parser("cognition", help="run Zoe's native SPU, texture, stereo, and execution-imagery field")
+    cognition.add_argument("--spu", help="SPU ELF artifact; default: documented synthetic instruction words")
+    cognition.add_argument("--texture", help="NPZ containing a grayscale image array; default: SPU byte texture")
+    cognition.add_argument("--previous", help="earlier stereo imagery JSON report for historical transition costs")
+    cognition.add_argument("--steps", type=int, default=3, help="stereo observations to acquire, from 1 to 8")
+    cognition.add_argument("--benchmark", type=int, default=3, help="DCT calibration runs, from 1 to 16")
+    cognition.add_argument("--template", help="cyclic-flow JSON template for the shared visualization")
+    cognition.add_argument("--output", required=True, help="export .json, .svg, .png, or .gem")
+    cognition.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    cognition.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
+
     halo = commands.add_parser("halo", help="compare independent pose searches from two synthetic projections")
     halo.add_argument("--metric", choices=("both", "l2", "walsh"), default="both", help="similarity metric; never averaged")
     halo.add_argument("--angle", type=float, default=65, help="parallax view angle in degrees, 1-89")
@@ -272,6 +295,10 @@ def _measure_from_arguments(host, session, arguments):
     ).report
 
 
+def _emit_json_line(document):
+    print(json.dumps(document, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":")))
+
+
 def _emit_json(document, output=None):
     text = json.dumps(document, ensure_ascii=False, allow_nan=False, indent=2, sort_keys=True) + "\n"
     if output is None:
@@ -307,6 +334,95 @@ def main(argv=None):
             else:
                 raise ValueError("eye output format must be json, svg, png, or gem")
             _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "actual_camera_used": False, "executed": False})
+            return 0
+        if arguments.command == "imagery":
+            from .cognition import unique_object
+            from .imagery import imagery_scene, run_document
+            document = {}
+            if arguments.input:
+                source = Path(arguments.input).expanduser().resolve(strict=True)
+                if source.stat().st_size > 4 * 1024 * 1024:
+                    raise ValueError("imagery input exceeds the 4 MiB limit")
+                document = json.loads(source.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            previous = None
+            if arguments.previous:
+                previous_path = Path(arguments.previous).expanduser().resolve(strict=True)
+                if previous_path.stat().st_size > 16 * 1024 * 1024:
+                    raise ValueError("previous imagery report exceeds the 16 MiB limit")
+                previous = json.loads(previous_path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            on_step = None
+            if arguments.live:
+                on_step = lambda record: _emit_json_line({"type": "navigation", **record})
+            report = run_document(document, previous=previous, steps=arguments.steps, on_step=on_step)
+            template = None
+            if arguments.template:
+                template_path = Path(arguments.template).expanduser().resolve(strict=True)
+                if template_path.stat().st_size > 65536:
+                    raise ValueError("cyclic template exceeds the 64 KiB limit")
+                template = json.loads(template_path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            if arguments.layout == "network" or template is not None:
+                from .cyclic_flow import cyclic_flow_scene
+                scene, report = cyclic_flow_scene(report, template)
+            else:
+                scene, report = imagery_scene(report)
+            if not arguments.output:
+                if arguments.live:
+                    return 0
+                if arguments.json:
+                    _emit_json(report)
+                else:
+                    _emit_json({"instrument": report["instrument"], "summary": report["summary"], "observed_views": report["observed_views"], "plans": report["plans"], "external_actions": 0})
+                return 0
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                _emit_json(report, output)
+            elif kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("imagery output format must be json, svg, png, or gem")
+            summary = {"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "external_actions": 0}
+            if arguments.live:
+                summary["type"] = "artifact"
+                _emit_json_line(summary)
+            else:
+                _emit_json(summary)
+            return 0
+        if arguments.command == "cognition":
+            from .cognition import unique_object
+            from .cognitive_field import cognition_scene, run_cognition
+            template = None
+            if arguments.template:
+                template_path = Path(arguments.template).expanduser().resolve(strict=True)
+                if template_path.stat().st_size > 65536:
+                    raise ValueError("cyclic template exceeds the 64 KiB limit")
+                template = json.loads(template_path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+            report = run_cognition(
+                spu_path=arguments.spu,
+                texture_path=arguments.texture,
+                previous=arguments.previous,
+                stereo_steps=arguments.steps,
+                template=template,
+                benchmark_repeat=arguments.benchmark,
+            )
+            scene, augmented = cognition_scene(report)
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                _emit_json(augmented, output)
+            elif kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("cognition output format must be json, svg, png, or gem")
+            _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "external_actions": 0})
             return 0
         if arguments.command == "halo":
             from .halo import experiment, halo_scene

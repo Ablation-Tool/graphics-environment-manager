@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "title": "ZOE / CYCLIC FIELD",
+  "subtitle": "Observe. Imagine. Learn. Navigate. Repeat.",
+  "cycle": ["perception", "thinking", "learning", "action"],
+  "labels": {
+    "perception": "PERCEPTION",
+    "thinking": "IMAGERY",
+    "learning": "LEARNING",
+    "action": "NAVIGATION",
+    "center": "LIVING GEOMETRY",
+    "vividness": "VIVIDNESS"
+  },
+  "palette": {
+    "perception": "cyan",
+    "thinking": "magenta",
+    "learning": "yellow",
+    "action": "orange",
+    "center": "cyan"
+  },
+  "transitions": ["proposals", "feedback", "weights", "observations"]
+}

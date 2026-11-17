@@ -241,6 +241,111 @@ python -m gem eye --output second-eye.json
 
 The native `gem.eye_view` window provides focus, aperture, and baseline controls and JSON/SVG/PNG/GEM VDI export. `gem.eye` produces the same scene and report without accessing a camera. `tools.test_eye` checks known geometry, depth sensitivity, defocus, unbounded far depth of field, scene/VDI constraints, no-overwrite exports, and native controls. The preserved default measurement is [`evidence/eye/synthetic-stereo.json`](evidence/eye/synthetic-stereo.json).
 
+## Shared perception and imagery
+
+`gem.imagery` is an executable, neuroscience-inspired computational instrument—not a neural or phenomenological model. It shares a world-centered 3D reconstruction between two operations: perception fuses new stereo measurements into that state, while imagery projects the prior state into a candidate view before the corresponding observation is supplied. Prediction error is measured in pixels and retained as telemetry. Geometric vividness records imagined detail, prediction precision, and reconstruction stability; it is not subjective vividness, emotion, or consciousness. Observed, imagined, and reconstructed records have explicit provenance.
+
+For camera-centered horizontal coordinates \(x_l,x_r\), vertical coordinate \(v\), focal length \(f_{px}\), and baseline \(B\), triangulation uses
+
+\[
+Z=\frac{f_{px}B}{x_l-x_r},\qquad X=\frac{(x_l+x_r)Z}{2f_{px}},\qquad Y=\frac{vZ}{f_{px}}.
+\]
+
+The camera-centered point is rotated back into the shared world frame. Precision fusion updates a labeled point with weight \(w=\sigma_q^{-1/2}\), where \(\sigma_q\) is the existing disparity-quantization sensitivity in meters. The report retains each point's weighted reconstruction spread. `fusion: arithmetic` selects the former uniform mean for comparison. Correspondence is supplied by the synthetic scene or input labels; automatic feature matching, occlusion handling, camera calibration, and natural-image encoding are outside the current scope.
+
+Accessible volume gates live targets through \(V_\tau=\{v:p_v>\tau\}\), using the declared forecast distribution and \(\tau=0.05\). It limits candidates without measuring correctness or granting action authorization. Dijkstra then plans over the current view and accessible graph. Transition cost is angular distance divided by 15 plus `log1p` of the historical mean prediction error in pixels. The target rule maximizes minimum angular separation from observed views, then minimizes current path cost. A previous report can therefore change the selected route without being treated as a correctness oracle. Optimality is limited to the current declared graph and nonnegative weights. Navigation stops when the unobserved accessible set is exhausted.
+
+```bash
+python -m pip install -e '.[imagery]'
+python -m gem imagery --live --steps 4
+python -m gem imagery --steps 4 --output imagery.json
+python -m gem imagery --previous imagery.json --steps 2 --output guided.svg
+python -m gem imagery --input stereo-observations.json --output reconstruction.gem
+```
+
+The optional JSON input contains:
+
+- `views`: 2–32 unique angles; the default is `[0, 15, 30, 45]` degrees.
+- `initial_view`: the first observed angle.
+- `baseline`: stereo baseline accepted by `EyeModel`.
+- `fusion`: `precision` for the default \(\sigma_q^{-1/2}\) weights or `arithmetic` for a uniform mean.
+- `points`: labeled world-space `{name, x, y, z}` records for a synthetic ground-truth run.
+- `observations`: an alternative to `points`, mapping every declared angle to labeled `{name, left, right, v}` stereo measurements.
+- `forecast`: an explicit normalized distribution keyed by formatted view angle. Without one, the report declares a uniform prior. Accessible volume uses the strict \(p>0.05\) count to gate candidates, never to score correctness or authorize actions.
+
+`--live` streams one compact JSON object per observe–imagine–plan cycle. With `--output`, a final compact `artifact` record identifies the saved report or scene. Without `--live`, the complete report retains the same navigation records under `navigation`.
+
+The default synthetic scene reconstructs 51 points. Precision fusion reduces four-view mean world-space reconstruction error from approximately **2.336 mm** with arithmetic fusion to **2.306 mm**. Inverse-variance fusion was also tested and rejected because it worsened true reconstruction error in this benchmark. These small results describe one quantization benchmark, not natural-image performance, uncertainty calibration, subjective sight, or a shared biological neural mechanism. No physical camera or external action is used. JSON, SVG, PNG, and replayable GEM VDI exports do not overwrite existing files.
+
+### Cyclic Field: editable creative network
+
+`gem.cyclic_flow` turns the same report into a symmetric cyclic canvas. Perception, thinking/imagery, learning, and action/navigation form four outer cards around shared geometry and vividness. Curved transitions show the loop; the cards contain the actual observation count, accessible volume, prediction error, fusion mode, and Dijkstra path. The center keeps observed, imagined, and reconstructed provenance distinct. The visualization does not manufacture an intelligence, creativity, or aesthetic score.
+
+```bash
+python -m gem imagery --layout network --output cyclic-field.png
+python -m gem imagery --template examples/cyclic-flow.json --output custom-cyclic-field.svg
+```
+
+`examples/cyclic-flow.json` is a bounded editable template with exactly these fields:
+
+- `schema_version`: `1`.
+- `title` and `subtitle`: printable bounded text.
+- `cycle`: all four capabilities exactly once in any order.
+- `labels`: capability, center, and vividness labels.
+- `palette`: named GEM colors for the four capabilities and center.
+- `transitions`: four bounded labels for the cyclic links.
+
+Supplying `--template` implies the network layout. JSON exports preserve the selected template under `creative_template` and set `visual_layout: cyclic`; SVG, PNG, and GEM VDI exports remain deterministic and replayable. Template changes alter presentation and cycle ordering, not the underlying measurements, planning costs, permissions, or evidence. Zoe or an analyst can remix the template without modifying engine code or treating a preferred aesthetic as a measured optimization.
+
+## Native shared cognitive field
+
+`gem.cognitive_field` joins SPU execution imagery, structural texture, volumetric skeletons, stereo reconstruction, and historical learning without replacing the existing `gem.cognition` authorization guard. `gem.spu_cognition` owns instruction and local-storage semantics; `gem.texture_cognition` owns perceptual descriptors and six-neighbor volume graphs. The same provenance labels—observed, imagined, reconstructed, and verified—apply throughout.
+
+For `lqd` and `stqd`, the SPU ISA's local-storage address is represented directly:
+
+\[
+LSA=(\operatorname{signextend}(I10\mathbin{\|}0000)+RA_{0:3})\mathbin{\&}LSLR\mathbin{\&}0xFFFFFFF0.
+\]
+
+`LocalStore` provides checked 16-byte reads and writes. Instruction records include format, registers, immediates, decoded address, and source hashes. Pipeline and latency values come from *Programming the Cell Processor*, Appendix D. Unknown values remain unknown in coverage metrics; one-cycle placeholders are used only for declared graph projections. The dual-issue preview follows the book's pipeline-0-then-pipeline-1 pairing rule with a limited register-read/write dependency approximation. It is not an observed hardware trace or a complete channel, branch, or memory model.
+
+Dijkstra finds minimum cumulative instruction-latency paths through decoded sequential and direct-branch edges. The original graph remains cyclic; selected predecessor trees and paths are annotations rather than replacements for that graph.
+
+Structural texture uses four-neighbor absolute intensity differences and single-source Dijkstra costs. For each nonseed pixel,
+
+\[
+NDC=\frac{D(p)}{L_1(p)},\qquad NLN=\frac{L_1(p)}{W+H-2}PR.
+\]
+
+The seed is excluded because \(L_1=0\). The 2D histogram uses NLN on the x-axis and NDC on the y-axis. Reports include entropy, cost matrices, and 400 dominant absolute 2D DCT coefficients. SVM scores are not treated as probabilities or accessible-volume inputs without separate calibration.
+
+Six-neighbor volumetric skeletons use inverse boundary-distance weights. The maximum-distance voxel supplies a centerline through predecessor links, and parent/child edges provide a symbolic description. These operations are structural perception, not medical validation.
+
+The Beowulf layer records the declared PPE → local-store → SPE execution → MFC/EIB data-flow structure. It does not claim a live cluster trace. JSON exports preserve the complete native report and selected creative template; Cyclic Field scenes display SPU operations, structural texture entropy, timing coverage, and stereo vividness together.
+
+```bash
+python -m pip install -e '.[cognition]'
+python -m gem cognition --output cognition.json
+python -m gem cognition --spu /path/to/spu.elf --steps 4 --output cognition.png
+python -m gem cognition --spu /path/to/spu.elf --texture structural-image.npz --output cognition.gem
+```
+
+Real SPU ELF inputs are decoded only; no target executable is run. `ablation-tool` supplies the SPU decoder through the optional `cognition` dependency set. A supplied NPZ texture must contain an `image` array. Without one, the field reshapes the decoded SPU instruction bytes into a structural texture.
+
+### Roofline execution planning
+
+`gem.execution_cognition` supplies workload models and architecture selection. For declared floating-point work \(F\), transferred bytes \(M\), compute rate \(R\), and memory bandwidth \(B\), the lower bound is
+
+\[
+T_{\min}\geq\max(F/R,M/B).
+\]
+
+DCT uses \(4N^3\) operations and \((4N^3+2N^2)w\) bytes for an explicitly uncached elementwise model. FFT uses \(5N\log_2N\) operations and one complex-vector read/write. Matrix multiplication uses \(2MNK\) operations and one read of each input matrix plus one output write. These are declared models, not universal memory-traffic formulas.
+
+Exact priority-queue Dijkstra remains on the CPU path. No frontier-based replacement is claimed. Other workloads select the minimum complete lower bound among device profiles; incomplete compute or bandwidth data never produces a fabricated GPU execution claim.
+
+`benchmark_dct` measures `_dct_features` repeatedly and records median runtime, achieved GFLOP/s, and achieved bandwidth on the current CPU. NVIDIA cluster stream-processor and bandwidth figures remain reference profiles, not detected devices. `gpu_execution` is explicitly `not_performed`; hardware availability and kernel latency would require separate execution evidence. `--benchmark N` controls 1–16 calibration runs per `gem cognition` invocation.
+
 ## Halo Field: projection and competing templates
 
 `gem.halo` is an original, bounded six-parameter pose experiment over a synthetic non-anatomical cloud of 450 points. It is not a medical reconstruction, physical X-ray simulator, diagnostic tool, encryption construction, or model of human sight. NumPy is available through the `halo` package extra; no deep-learning framework or PETSc installation is used.
@@ -306,10 +411,10 @@ A possible passive-RC biological experiment belongs outside this game model. Ohm
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
-python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo tools.test_tetris tools.test_feed
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
 
 stress/nested_x11.sh env PYTHONPATH=. \
-  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_halo tools.test_tetris tools.test_feed
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
 ```
 
 The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.

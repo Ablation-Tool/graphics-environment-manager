@@ -22,6 +22,9 @@ def _parser():
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
 
+    autonomy = commands.add_parser("autonomy", help="run the shared Zoe One full-autonomy engine")
+    autonomy.add_argument("arguments", nargs=argparse.REMAINDER, help="run or verify with canonical Zoe-Autonomy arguments")
+
     os_command = commands.add_parser("os", help="open the mirrored GEM brain, manual library, or field notebook")
     os_command.add_argument("--module", choices=("mirror", "library", "field"), default="mirror")
     os_command.add_argument("--output", help="export the default scene to .svg, .png, or .gem instead of opening GTK")
@@ -286,6 +289,9 @@ def _emit_json(document, output=None):
 def main(argv=None):
     arguments = _parser().parse_args(argv)
     try:
+        if arguments.command == "autonomy":
+            from .autonomy import main as autonomy_main
+            return autonomy_main(arguments.arguments)
         if arguments.command == "eye":
             from .eye import EyeModel, eye_scene
             model = EyeModel(focus=arguments.focus, fstop=arguments.aperture, baseline=arguments.baseline)

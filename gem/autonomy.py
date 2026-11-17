@@ -21,6 +21,9 @@ def main(argv=None):
     os.environ["ZOE_ROOT"] = str(zoe_root)
     if "--zoe-root" not in arguments:
         arguments = ["--zoe-root", str(zoe_root), *arguments]
+    native = zoe_root / "guiai-lab"
+    if str(native) not in sys.path:
+        sys.path.insert(0, str(native))
     from zoe_autonomy.cli import main as autonomy_main
 
     return autonomy_main(arguments)

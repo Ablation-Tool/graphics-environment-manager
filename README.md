@@ -2,6 +2,21 @@
 
 The standalone home of the canonical **Ablation native workbench**, reusable as a graphical environment for **your project + your AI agent**.
 
+## Zoe One: shared full autonomy
+
+Canonical GEM is one host in the [Zoe One system](https://github.com/Ablation-Tool/zoe). Its `autonomy` command delegates to the canonical [Zoe-Autonomy](https://github.com/Ablation-Tool/Zoe-Autonomy) engine rather than maintaining a second implementation.
+
+```bash
+export ZOE_ROOT=/path/to/zoe
+export ZOE_AUTONOMY_ROOT=/path/to/Zoe-Autonomy
+
+gem autonomy run
+gem autonomy run --output new-profile.json
+gem autonomy verify new-profile.json
+```
+
+Zoe authors the episode goal, selects by value, and executes an internal transition without operator approval. Every host uses the same operational profile and `full_autonomy` classification. External actuation remains outside Zoe's authority. See the [system manifest](https://github.com/Ablation-Tool/zoe/blob/main/one-system.json) for compatible revisions.
+
 ## Zoe OS: one mirrored brain, shared instruments
 
 The unified mathematical work now lives here—not in Zoe's `guiai-lab` directory. `python -m gem os` opens a native GTK desktop for paired forward/retrograde HELEN observations, the local GEM manual library, and the Bayesian field notebook. This is a research desktop, not a bootable kernel or a rebuild of the original Digital Research GEM.

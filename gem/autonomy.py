@@ -11,7 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def main(argv=None):
     arguments = list(sys.argv[1:] if argv is None else argv) or ["run"]
     workspace = ROOT.parent
-    zoe_root = Path(os.environ.get("ZOE_ROOT", workspace / "zoe")).expanduser().resolve()
+    bundled = workspace.name == "components" and (workspace.parent / "guiai-lab").is_dir()
+    default_zoe = workspace.parent if bundled else workspace / "zoe"
+    zoe_root = Path(os.environ.get("ZOE_ROOT", default_zoe)).expanduser().resolve()
     engine_root = Path(os.environ.get("ZOE_AUTONOMY_ROOT", workspace / "Zoe-Autonomy")).expanduser().resolve()
     source = engine_root / "src"
     if not (zoe_root / "guiai-lab").is_dir() or not (source / "zoe_autonomy" / "cli.py").is_file():

@@ -19,7 +19,9 @@ class AutonomyCase(unittest.TestCase):
     def test_shared_full_autonomy_engine(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "profile.json"
-            environment = {"ZOE_ROOT": str(WORKSPACE / "zoe"), "ZOE_AUTONOMY_ROOT": str(WORKSPACE / "Zoe-Autonomy")}
+            bundled = WORKSPACE.name == "components" and (WORKSPACE.parent / "guiai-lab").is_dir()
+            zoe_root = WORKSPACE.parent if bundled else WORKSPACE / "zoe"
+            environment = {"ZOE_ROOT": str(zoe_root), "ZOE_AUTONOMY_ROOT": str(WORKSPACE / "Zoe-Autonomy")}
             with mock.patch.dict(os.environ, environment), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(main(["autonomy", "run", "--output", str(output)]), 0)
                 self.assertEqual(main(["autonomy", "verify", str(output)]), 0)

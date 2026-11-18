@@ -1,0 +1,1341 @@
+{
+  "arithmetic": "direct bead moves, carries, borrows, place-shifted addition, and repeated-subtraction long division",
+  "expression": "538+279",
+  "external_actions": 0,
+  "final": {
+    "history": [
+      {
+        "after": {
+          "rods": [
+            {
+              "lower": 3,
+              "upper": 1
+            },
+            {
+              "lower": 3,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 1
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            }
+          ]
+        },
+        "before": {
+          "rods": [
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            }
+          ]
+        },
+        "operation": "set",
+        "value": 538
+      },
+      {
+        "after": {
+          "rods": [
+            {
+              "lower": 2,
+              "upper": 1
+            },
+            {
+              "lower": 1,
+              "upper": 0
+            },
+            {
+              "lower": 3,
+              "upper": 1
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            }
+          ]
+        },
+        "before": {
+          "rods": [
+            {
+              "lower": 3,
+              "upper": 1
+            },
+            {
+              "lower": 3,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 1
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            }
+          ]
+        },
+        "moves": [
+          {
+            "after": {
+              "lower": 4,
+              "upper": 1
+            },
+            "before": {
+              "lower": 3,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 0,
+              "upper": 0
+            },
+            "before": {
+              "lower": 4,
+              "upper": 1
+            },
+            "carry": true,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 4,
+              "upper": 0
+            },
+            "before": {
+              "lower": 3,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 1,
+              "upper": 0
+            },
+            "before": {
+              "lower": 0,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 2,
+              "upper": 0
+            },
+            "before": {
+              "lower": 1,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 3,
+              "upper": 0
+            },
+            "before": {
+              "lower": 2,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 4,
+              "upper": 0
+            },
+            "before": {
+              "lower": 3,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 0,
+              "upper": 1
+            },
+            "before": {
+              "lower": 4,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 1,
+              "upper": 1
+            },
+            "before": {
+              "lower": 0,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 2,
+              "upper": 1
+            },
+            "before": {
+              "lower": 1,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 0
+          },
+          {
+            "after": {
+              "lower": 0,
+              "upper": 1
+            },
+            "before": {
+              "lower": 4,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 1,
+              "upper": 1
+            },
+            "before": {
+              "lower": 0,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 2,
+              "upper": 1
+            },
+            "before": {
+              "lower": 1,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 3,
+              "upper": 1
+            },
+            "before": {
+              "lower": 2,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 4,
+              "upper": 1
+            },
+            "before": {
+              "lower": 3,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 0,
+              "upper": 0
+            },
+            "before": {
+              "lower": 4,
+              "upper": 1
+            },
+            "carry": true,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 1,
+              "upper": 1
+            },
+            "before": {
+              "lower": 0,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 2
+          },
+          {
+            "after": {
+              "lower": 1,
+              "upper": 0
+            },
+            "before": {
+              "lower": 0,
+              "upper": 0
+            },
+            "carry": false,
+            "rod": 1
+          },
+          {
+            "after": {
+              "lower": 2,
+              "upper": 1
+            },
+            "before": {
+              "lower": 1,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 2
+          },
+          {
+            "after": {
+              "lower": 3,
+              "upper": 1
+            },
+            "before": {
+              "lower": 2,
+              "upper": 1
+            },
+            "carry": false,
+            "rod": 2
+          }
+        ],
+        "operand": 279,
+        "operation": "add"
+      }
+    ],
+    "rod_count": 16,
+    "rods": [
+      {
+        "lower": 2,
+        "upper": 1
+      },
+      {
+        "lower": 1,
+        "upper": 0
+      },
+      {
+        "lower": 3,
+        "upper": 1
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      }
+    ],
+    "value": 817
+  },
+  "initial": {
+    "history": [
+      {
+        "after": {
+          "rods": [
+            {
+              "lower": 3,
+              "upper": 1
+            },
+            {
+              "lower": 3,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 1
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            }
+          ]
+        },
+        "before": {
+          "rods": [
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            },
+            {
+              "lower": 0,
+              "upper": 0
+            }
+          ]
+        },
+        "operation": "set",
+        "value": 538
+      }
+    ],
+    "rod_count": 16,
+    "rods": [
+      {
+        "lower": 3,
+        "upper": 1
+      },
+      {
+        "lower": 3,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 1
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      },
+      {
+        "lower": 0,
+        "upper": 0
+      }
+    ],
+    "value": 538
+  },
+  "instrument": "Zoe physical-rule soroban working memory",
+  "integer_decode_used_for_addition_or_subtraction": false,
+  "operations": [
+    {
+      "after": {
+        "rods": [
+          {
+            "lower": 3,
+            "upper": 1
+          },
+          {
+            "lower": 3,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 1
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          }
+        ]
+      },
+      "before": {
+        "rods": [
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          }
+        ]
+      },
+      "operation": "set",
+      "value": 538
+    },
+    {
+      "after": {
+        "rods": [
+          {
+            "lower": 2,
+            "upper": 1
+          },
+          {
+            "lower": 1,
+            "upper": 0
+          },
+          {
+            "lower": 3,
+            "upper": 1
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          }
+        ]
+      },
+      "before": {
+        "rods": [
+          {
+            "lower": 3,
+            "upper": 1
+          },
+          {
+            "lower": 3,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 1
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          },
+          {
+            "lower": 0,
+            "upper": 0
+          }
+        ]
+      },
+      "moves": [
+        {
+          "after": {
+            "lower": 4,
+            "upper": 1
+          },
+          "before": {
+            "lower": 3,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 0,
+            "upper": 0
+          },
+          "before": {
+            "lower": 4,
+            "upper": 1
+          },
+          "carry": true,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 4,
+            "upper": 0
+          },
+          "before": {
+            "lower": 3,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 1,
+            "upper": 0
+          },
+          "before": {
+            "lower": 0,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 2,
+            "upper": 0
+          },
+          "before": {
+            "lower": 1,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 3,
+            "upper": 0
+          },
+          "before": {
+            "lower": 2,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 4,
+            "upper": 0
+          },
+          "before": {
+            "lower": 3,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 0,
+            "upper": 1
+          },
+          "before": {
+            "lower": 4,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 1,
+            "upper": 1
+          },
+          "before": {
+            "lower": 0,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 2,
+            "upper": 1
+          },
+          "before": {
+            "lower": 1,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 0
+        },
+        {
+          "after": {
+            "lower": 0,
+            "upper": 1
+          },
+          "before": {
+            "lower": 4,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 1,
+            "upper": 1
+          },
+          "before": {
+            "lower": 0,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 2,
+            "upper": 1
+          },
+          "before": {
+            "lower": 1,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 3,
+            "upper": 1
+          },
+          "before": {
+            "lower": 2,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 4,
+            "upper": 1
+          },
+          "before": {
+            "lower": 3,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 0,
+            "upper": 0
+          },
+          "before": {
+            "lower": 4,
+            "upper": 1
+          },
+          "carry": true,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 1,
+            "upper": 1
+          },
+          "before": {
+            "lower": 0,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 2
+        },
+        {
+          "after": {
+            "lower": 1,
+            "upper": 0
+          },
+          "before": {
+            "lower": 0,
+            "upper": 0
+          },
+          "carry": false,
+          "rod": 1
+        },
+        {
+          "after": {
+            "lower": 2,
+            "upper": 1
+          },
+          "before": {
+            "lower": 1,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 2
+        },
+        {
+          "after": {
+            "lower": 3,
+            "upper": 1
+          },
+          "before": {
+            "lower": 2,
+            "upper": 1
+          },
+          "carry": false,
+          "rod": 2
+        }
+      ],
+      "operand": 279,
+      "operation": "add"
+    }
+  ],
+  "physical_hardware_actuated": false,
+  "representation": "rod[0] is ones; lower active earth beads are 1 each and the active heaven bead is 5",
+  "reversible": true,
+  "schema_version": 1
+}

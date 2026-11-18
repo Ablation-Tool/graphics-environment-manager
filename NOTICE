@@ -83,3 +83,18 @@ clearance, affiliation, biological validation, or endorsement by USC/iLab.
 A public Vivotek sample image was used only for local input testing. The sample
 is not redistributed in this repository, and no Vivotek firmware or runtime is
 included. Source: https://ftpmirror.your.org/pub/misc/ftp.vivotek.com/snapshotd.jpg
+
+Soroban and ecological working memory
+-------------------------------------
+The soroban representation was informed by user-supplied notes on bead state,
+place value, carries, borrows, and working memory. The implementation is original
+and operates on explicit bead configurations with reversible checkpoints. No
+example C program is copied, and no physical abacus or other hardware is actuated.
+
+Ecological and rehearsal references include Varga and Heck on respiration
+(https://doi.org/10.1101/174276), Adamatzky et al. on fungal electrical activity
+(https://doi.org/10.1101/2022.04.03.486900), Wang et al. on prediction and
+feedback (https://doi.org/10.1101/2025.06.10.658968), and Xu et al. on prosodic
+recitation training (https://doi.org/10.1038/s42003-026-10664-4). These sources
+inform experiment structure and provenance. They do not validate a biological
+model, a mental-abacus mechanism, or a claim of consciousness.

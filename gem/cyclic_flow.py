@@ -122,12 +122,13 @@ def cyclic_flow_scene(report, template=None):
         ]
         details["thinking"] = [
             "Imagine / SPU + candidate futures",
-            f"AV={accessible} · H={native['texture_entropy_bits']:.2f} bits",
+            f"AV={accessible} · abacus={native.get('abacus_value', 'n/a')} · H={native['texture_entropy_bits']:.2f}",
         ]
         details["learning"] = [
-            "Memory / ISA + precision feedback",
-            f"{native['execution_backend']} · {native['spu_timing_known_ratio']:.1%} timing · {vividness['fusion']}",
+            "Memory / beads + ISA + precision",
+            f"gain={native.get('ecology_gain', 'n/a')} · {native['execution_backend']} · {native['spu_timing_known_ratio']:.1%} timing",
         ]
+        details["action"][0] = "Navigate / Dijkstra + bead moves"
     objects = [
         _rectangle("background", [0, 0, 1920, 1080], "black", "black"),
         _text("title", [88, 91], template["title"], 30, palette["center"]),
@@ -175,10 +176,10 @@ def cyclic_flow_scene(report, template=None):
         _ellipse("core-outer", [960, 555], [238, 163], palette["center"], "black", 1.5),
         _ellipse("core-inner", [960, 555], [204, 132], "magenta", "black", 1.1),
         _centered("core-label", 960, 493, labels["center"], 22, palette["center"]),
-        _centered("core-points", 960, 532, f"{native['spu_instruction_count']} SPU ops · {detail_count} points" if native is not None else f"{detail_count} reconstructed points", 17, "white"),
+        _centered("core-points", 960, 532, f"{native['spu_instruction_count']} SPU ops · {detail_count} points · abacus {native.get('abacus_value', 'n/a')}" if native is not None else f"{detail_count} reconstructed points", 17, "white"),
         _centered("core-provenance", 960, 565, "observed / imagined / reconstructed", 14, "lightgray"),
         _centered("vividness-label", 960, 613, labels["vividness"], 17, "magenta"),
-        _centered("vividness-metrics", 960, 644, f"{native['execution_gflops']:.2f} GF/s · {prediction}" if native is not None else f"{prediction} prediction · {spread} spread", 14, "yellow"),
+        _centered("vividness-metrics", 960, 644, f"{native['execution_gflops']:.2f} GF/s · gain {native.get('ecology_gain', 'n/a')} · {prediction}" if native is not None else f"{prediction} prediction · {spread} spread", 14, "yellow"),
         _centered("footer", 960, 1006, "Geometric vividness, not emotion · explicit provenance · external actions = 0", 15, "lightgray"),
         _centered("signature", 960, 1041, "A remixable instrument for seeing, imagining, learning, and making paths.", 14, "gray"),
     ])

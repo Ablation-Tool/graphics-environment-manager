@@ -110,9 +110,24 @@ def _parser():
     cognition.add_argument("--steps", type=int, default=3, help="stereo observations to acquire, from 1 to 8")
     cognition.add_argument("--benchmark", type=int, default=3, help="DCT calibration runs, from 1 to 16")
     cognition.add_argument("--template", help="cyclic-flow JSON template for the shared visualization")
+    cognition.add_argument("--abacus-expression", default="538+279", help="soroban expression such as 538+279 or 100-3")
+    cognition.add_argument("--ecology-steps", type=int, default=8, help="ecological feedback cycles, from 1 to 64")
     cognition.add_argument("--output", required=True, help="export .json, .svg, .png, or .gem")
     cognition.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
     cognition.add_argument("--width", type=int, default=1920, help="SVG/PNG width in pixels")
+
+    abacus = commands.add_parser("abacus", help="compute exact soroban bead states and reversible operations")
+    abacus.add_argument("initial", type=int, default=538, nargs="?", help="initial nonnegative value; default: 538")
+    abacus.add_argument("--rods", type=int, default=16, help="number of base-10 rods, from 1 to 64")
+    abacus.add_argument("--expression", help="one expression such as 538+279, 100-3, 23*7, or 161/7")
+    abacus.add_argument("--add", type=int, action="append", default=[], help="add a nonnegative value; repeat to chain")
+    abacus.add_argument("--subtract", type=int, action="append", default=[], help="subtract a nonnegative value; repeat to chain")
+    abacus.add_argument("--multiply", type=int, action="append", default=[], help="multiply by a nonnegative value; repeat to chain")
+    abacus.add_argument("--divide", type=int, action="append", default=[], help="divide by a positive value; repeat to chain")
+    abacus.add_argument("--undo", action="store_true", help="restore the checkpoint before the last operation")
+    abacus.add_argument("--output", required=True, help="export .json, .svg, .png, or .gem")
+    abacus.add_argument("--format", choices=("json", "svg", "png", "gem"), help="default: infer from output suffix")
+    abacus.add_argument("--width", type=int, default=1600, help="SVG/PNG width in pixels")
 
     halo = commands.add_parser("halo", help="compare independent pose searches from two synthetic projections")
     halo.add_argument("--metric", choices=("both", "l2", "walsh"), default="both", help="similarity metric; never averaged")
@@ -418,6 +433,8 @@ def main(argv=None):
                 benchmark_repeat=arguments.benchmark,
                 image_path=arguments.image,
                 attention_steps=arguments.foci,
+                abacus_expression=arguments.abacus_expression,
+                ecology_steps=arguments.ecology_steps,
             )
             scene, augmented = cognition_scene(report)
             output = Path(arguments.output)
@@ -433,6 +450,40 @@ def main(argv=None):
             else:
                 raise ValueError("cognition output format must be json, svg, png, or gem")
             _emit_json({"instrument": report["instrument"], "output": str(output), "bytes": output.stat().st_size, "summary": report["summary"], "external_actions": 0})
+            return 0
+        if arguments.command == "abacus":
+            from .abacus_cognition import abacus_report, abacus_scene, expression_report
+
+            if arguments.expression:
+                if any((arguments.add, arguments.subtract, arguments.multiply, arguments.divide)):
+                    raise ValueError("choose --expression or direct operations, not both")
+                report = expression_report(arguments.expression, arguments.rods, undo=arguments.undo)
+            else:
+                operations = [("add", value) for value in arguments.add]
+                operations.extend(("subtract", value) for value in arguments.subtract)
+                operations.extend(("multiply", value) for value in arguments.multiply)
+                operations.extend(("divide", value) for value in arguments.divide)
+                if arguments.undo:
+                    operations.append(("undo", None))
+                report = abacus_report(arguments.initial, operations, arguments.rods)
+            scene, _ = abacus_scene(report)
+            output = Path(arguments.output)
+            kind = arguments.format or output.suffix.lower().lstrip(".")
+            if kind == "json":
+                _emit_json(report, output)
+            elif kind == "svg":
+                write_svg(scene, output, arguments.width)
+            elif kind == "png":
+                write_png(scene, output, arguments.width)
+            elif kind == "gem":
+                write_metafile(scene, output)
+            else:
+                raise ValueError("abacus output format must be json, svg, png, or gem")
+            _emit_json({
+                "instrument": report["instrument"], "output": str(output),
+                "bytes": output.stat().st_size, "initial_value": report["initial"]["value"],
+                "final_value": report["final"]["value"], "external_actions": 0,
+            })
             return 0
         if arguments.command == "halo":
             from .halo import experiment, halo_scene

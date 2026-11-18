@@ -356,6 +356,33 @@ python -m gem cognition --image /path/to/image.jpg --foci 4 --output cognition.j
 
 Image files are limited to 32 MiB and 16,777,216 source pixels, resized within 256 pixels per side, and must retain at least 16 pixels per processed side. Pillow is included in the `cognition` extra. Every file-derived report retains the source path, SHA-256, original and processed dimensions, and `live_camera=False`. Without `--image`, the command uses a documented synthetic intensity/color pop-out. No camera, target executable, or external action is used. The Vivotek public sample at `https://ftpmirror.your.org/pub/misc/ftp.vivotek.com/snapshotd.jpg` was evaluated locally as an image source; it is not redistributed in this repository. No Vivotek firmware or proprietary runtime is included or executed.
 
+### Soroban working memory and ecological feedback
+
+`gem.abacus_cognition` implements a physical-rule soroban rather than an integer with an abacus label. Each rod stores 0–4 active earth beads and 0 or 1 active heaven bead:
+
+\[
+d_i=\operatorname{lower}_i+5\operatorname{upper}_i,\qquad d_i\in\{0,\ldots,9\}.
+\]
+
+Rod zero is the ones place. Addition moves earth beads up, changes four earth beads to one heaven bead, and carries to the next rod at nine. Subtraction reverses those transitions and borrows from the next rod. Comparisons inspect digits from the highest place. Multiplication uses place-shifted repeated addition; division uses place-shifted repeated subtraction with at most nine subtractions per quotient digit. Addition and subtraction do not decode the whole integer to perform the operation. `Soroban.value()` is used for reporting, counters, and bounded control decisions, not as a substitute for those bead transitions. Checkpoints restore the exact prior bead configuration, and `undo()` preserves both the original and inverse history.
+
+```bash
+python -m gem abacus 538 --add 279 --output soroban.svg
+python -m gem abacus --expression '161/7' --output division.json
+python -m gem abacus --expression '538+279' --undo --output restored.json
+```
+
+`gem.ecology_cognition` uses the same state representation for a declared resource-feedback experiment. Light, energy, moisture, nutrients, obstacles, position, gain, cost, and prediction error are observed or stored as bead configurations. The default environment is explicitly synthetic and is not a calibrated plant or fungal model. At each step, action availability depends on light, obstacles, energy cost, and position. Extending changes the subsequent position and therefore the next energy observation:
+
+\[
+\hat E_{t+1}=\operatorname{clip}(E_t+L_tg_t-c),\qquad
+\epsilon_t=|\hat E_{t+1}-E_{t+1}^{\mathrm{observed}}|.
+\]
+
+Gain increases when observed energy exceeds the prediction, decreases when it falls short, and otherwise remains unchanged. The updates are state-dependent and bounded, not a claim of monotonic improvement, neural integration, or consciousness. Every observation, action, gain update, and checkpoint is retained in JSON. `gem cognition --abacus-expression '10-3' --ecology-steps 8 --output cognition.json` includes the arithmetic result and the complete ecological history in the same native report.
+
+The literature supplies constraints, not an implementation shortcut. [Varga and Heck on respiration and embodied cognition](https://doi.org/10.1101/174276), [König et al. on spatial reference frames](https://doi.org/10.1101/170316), [Adamatzky et al. on fungal electrical activity](https://doi.org/10.1101/2022.04.03.486900), and [Wang et al. on prediction versus feedback](https://doi.org/10.1101/2025.06.10.658968) motivate distinct body/environment, prediction, and update pathways. [Calvo Tapia et al. on dimension lifting](https://doi.org/10.64898/2026.08.03.742413) motivates changing representational capacity without asserting that larger representations are always better. [Feng et al. on body-scaled affordances](https://doi.org/10.1101/2023.03.20.533336v4) constrains action to declared costs and limits. The other reviewed papers inform feedback-channel limits, community structure, chunking, ecological decision support, and specimen measurement; they do not independently validate this model or a consciousness claim. [Prosodic recitation training](https://doi.org/10.1038/s42003-026-10664-4) and [Tillmann and Dowling on poetry memory](https://doi.org/10.3758/bf03193301) inform rehearsal and sequence retention, not a mental-abacus proof. [Liu et al. on generation and revision](https://doi.org/10.1002/hbm.22849) supports separating generation from later evaluation.
+
 ### Roofline execution planning
 
 `gem.execution_cognition` supplies workload models and architecture selection. For declared floating-point work \(F\), transferred bytes \(M\), compute rate \(R\), and memory bandwidth \(B\), the lower bound is
@@ -435,10 +462,10 @@ A possible passive-RC biological experiment belongs outside this game model. Ohm
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
-python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_saliency_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_saliency_cognition tools.test_abacus_cognition tools.test_ecology_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
 
 stress/nested_x11.sh env PYTHONPATH=. \
-  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_saliency_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_saliency_cognition tools.test_abacus_cognition tools.test_ecology_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
 ```
 
 The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.

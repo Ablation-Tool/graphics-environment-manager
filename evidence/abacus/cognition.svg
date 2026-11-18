@@ -1,0 +1,409 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="ZOE / CYCLIC FIELD · shared perception and imagery">
+  <title>ZOE / CYCLIC FIELD · shared perception and imagery</title>
+  <rect x="0" y="0" width="1920.0" height="1080.0" fill="#ffffff" />
+  <g data-object-id="background">
+    <title>background</title>
+    <rect x="0.0" y="0.0" width="1920.0" height="1080.0" fill="#000000" stroke="#000000" stroke-width="1.0" />
+  </g>
+  <g data-object-id="title">
+    <title>title</title>
+    <text x="88.0" y="91.0" font-family="sans-serif" font-size="30.0" fill="#00ffff">ZOE / CYCLIC FIELD</text>
+  </g>
+  <g data-object-id="subtitle">
+    <title>subtitle</title>
+    <text x="91.0" y="137.0" font-family="sans-serif" font-size="18.0" fill="#d3d3d3">Observe. Imagine. Learn. Navigate. Repeat.</text>
+  </g>
+  <g data-object-id="live">
+    <title>live</title>
+    <text x="1580.0" y="91.0" font-family="sans-serif" font-size="14.0" fill="#808080">LIVE EVIDENCE / CYCLIC TEMPLATE</text>
+  </g>
+  <g data-object-id="orbit-0">
+    <title>orbit-0</title>
+    <ellipse cx="1495.0" cy="555.0" rx="4.0" ry="4.0" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-1">
+    <title>orbit-1</title>
+    <ellipse cx="1490.4230008349887" cy="605.2525840047199" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-2">
+    <title>orbit-2</title>
+    <ellipse cx="1476.7703170646514" cy="654.6453323644705" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-3">
+    <title>orbit-3</title>
+    <ellipse cx="1454.2755498935385" cy="702.3331214605596" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-4">
+    <title>orbit-4</title>
+    <ellipse cx="1423.3235910246747" cy="747.5" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-5">
+    <title>orbit-5</title>
+    <ellipse cx="1384.444037055811" cy="789.3731501683575" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-6">
+    <title>orbit-6</title>
+    <ellipse cx="1338.302127934803" cy="827.2361107568208" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-7">
+    <title>orbit-7</title>
+    <ellipse cx="1285.6873645196656" cy="860.4410360121256" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-8">
+    <title>orbit-8</title>
+    <ellipse cx="1227.5" cy="888.4197804570089" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-9">
+    <title>orbit-9</title>
+    <ellipse cx="1164.735636315323" cy="910.6936200168454" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-10">
+    <title>orbit-10</title>
+    <ellipse cx="1098.4681891298485" cy="926.8814431212913" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-11">
+    <title>orbit-11</title>
+    <ellipse cx="1029.8315128377276" cy="936.706271628917" rx="2.2" ry="2.2" fill="#00ffff" stroke="#00ffff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-12">
+    <title>orbit-12</title>
+    <ellipse cx="960.0" cy="940.0" rx="4.0" ry="4.0" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-13">
+    <title>orbit-13</title>
+    <ellipse cx="890.1684871622724" cy="936.706271628917" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-14">
+    <title>orbit-14</title>
+    <ellipse cx="821.5318108701515" cy="926.8814431212913" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-15">
+    <title>orbit-15</title>
+    <ellipse cx="755.2643636846772" cy="910.6936200168454" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-16">
+    <title>orbit-16</title>
+    <ellipse cx="692.5000000000001" cy="888.419780457009" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-17">
+    <title>orbit-17</title>
+    <ellipse cx="634.3126354803344" cy="860.4410360121256" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-18">
+    <title>orbit-18</title>
+    <ellipse cx="581.6978720651971" cy="827.2361107568208" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-19">
+    <title>orbit-19</title>
+    <ellipse cx="535.5559629441892" cy="789.3731501683576" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-20">
+    <title>orbit-20</title>
+    <ellipse cx="496.6764089753253" cy="747.5" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-21">
+    <title>orbit-21</title>
+    <ellipse cx="465.7244501064616" cy="702.3331214605596" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-22">
+    <title>orbit-22</title>
+    <ellipse cx="443.2296829353485" cy="654.6453323644706" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-23">
+    <title>orbit-23</title>
+    <ellipse cx="429.57699916501144" cy="605.25258400472" rx="2.2" ry="2.2" fill="#ff00ff" stroke="#ff00ff" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-24">
+    <title>orbit-24</title>
+    <ellipse cx="425.0" cy="555.0" rx="4.0" ry="4.0" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-25">
+    <title>orbit-25</title>
+    <ellipse cx="429.57699916501144" cy="504.74741599528005" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-26">
+    <title>orbit-26</title>
+    <ellipse cx="443.2296829353485" cy="455.3546676355295" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-27">
+    <title>orbit-27</title>
+    <ellipse cx="465.7244501064615" cy="407.6668785394405" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-28">
+    <title>orbit-28</title>
+    <ellipse cx="496.6764089753252" cy="362.5000000000001" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-29">
+    <title>orbit-29</title>
+    <ellipse cx="535.5559629441891" cy="320.6268498316425" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-30">
+    <title>orbit-30</title>
+    <ellipse cx="581.6978720651969" cy="282.76388924317934" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-31">
+    <title>orbit-31</title>
+    <ellipse cx="634.3126354803344" cy="249.55896398787456" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-32">
+    <title>orbit-32</title>
+    <ellipse cx="692.4999999999998" cy="221.58021954299124" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-33">
+    <title>orbit-33</title>
+    <ellipse cx="755.2643636846772" cy="199.30637998315456" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-34">
+    <title>orbit-34</title>
+    <ellipse cx="821.5318108701515" cy="183.11855687870872" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-35">
+    <title>orbit-35</title>
+    <ellipse cx="890.1684871622724" cy="173.29372837108298" rx="2.2" ry="2.2" fill="#ffff00" stroke="#ffff00" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-36">
+    <title>orbit-36</title>
+    <ellipse cx="959.9999999999999" cy="170.0" rx="4.0" ry="4.0" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-37">
+    <title>orbit-37</title>
+    <ellipse cx="1029.8315128377274" cy="173.29372837108298" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-38">
+    <title>orbit-38</title>
+    <ellipse cx="1098.4681891298483" cy="183.11855687870866" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-39">
+    <title>orbit-39</title>
+    <ellipse cx="1164.7356363153226" cy="199.3063799831545" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-40">
+    <title>orbit-40</title>
+    <ellipse cx="1227.5" cy="221.58021954299113" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-41">
+    <title>orbit-41</title>
+    <ellipse cx="1285.6873645196652" cy="249.55896398787422" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-42">
+    <title>orbit-42</title>
+    <ellipse cx="1338.302127934803" cy="282.76388924317916" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-43">
+    <title>orbit-43</title>
+    <ellipse cx="1384.4440370558107" cy="320.62684983164246" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-44">
+    <title>orbit-44</title>
+    <ellipse cx="1423.3235910246744" cy="362.49999999999983" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-45">
+    <title>orbit-45</title>
+    <ellipse cx="1454.2755498935385" cy="407.6668785394405" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-46">
+    <title>orbit-46</title>
+    <ellipse cx="1476.7703170646514" cy="455.3546676355292" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="orbit-47">
+    <title>orbit-47</title>
+    <ellipse cx="1490.4230008349887" cy="504.7474159952801" rx="2.2" ry="2.2" fill="#e95420" stroke="#e95420" stroke-width="0.4" />
+  </g>
+  <g data-object-id="cycle-0">
+    <title>cycle-0</title>
+    <polyline points="1111.42,241.151 1147.51,250.12 1182.46,260.968 1216.02,273.629 1248.01,288.024 1278.23,304.066 1306.48,321.655 1332.6,340.682 1356.42,361.031 1377.79,382.575 1396.59,405.183 1412.7,428.714 1426.02,453.024" stroke-linejoin="round" fill="none" stroke="#ff00ff" stroke-width="2.2" />
+  </g>
+  <g data-object-id="cycle-0-head">
+    <title>cycle-0-head</title>
+    <polygon points="1426.02,453.024 1411.23,440.601 1423.51,433.875" stroke-linejoin="round" fill="#ff00ff" stroke="#ff00ff" stroke-width="1.0" />
+  </g>
+  <g data-object-id="cycle-1">
+    <title>cycle-1</title>
+    <polyline points="1426.02,656.976 1412.7,681.286 1396.59,704.817 1377.79,727.425 1356.42,748.969 1332.6,769.318 1306.48,788.345 1278.23,805.934 1248.01,821.976 1216.02,836.371 1182.46,849.032 1147.51,859.88 1111.42,868.849" stroke-linejoin="round" fill="none" stroke="#ffff00" stroke-width="2.2" />
+  </g>
+  <g data-object-id="cycle-1-head">
+    <title>cycle-1-head</title>
+    <polygon points="1111.42,868.849 1127.2,857.715 1130.58,871.302" stroke-linejoin="round" fill="#ffff00" stroke="#ffff00" stroke-width="1.0" />
+  </g>
+  <g data-object-id="cycle-2">
+    <title>cycle-2</title>
+    <polyline points="808.582,868.849 772.485,859.88 737.545,849.032 703.976,836.371 671.985,821.976 641.77,805.934 613.518,788.345 587.401,769.318 563.582,748.969 542.206,727.425 523.407,704.817 507.299,681.286 493.982,656.976" stroke-linejoin="round" fill="none" stroke="#e95420" stroke-width="2.2" />
+  </g>
+  <g data-object-id="cycle-2-head">
+    <title>cycle-2-head</title>
+    <polygon points="493.982,656.976 508.769,669.399 496.491,676.125" stroke-linejoin="round" fill="#e95420" stroke="#e95420" stroke-width="1.0" />
+  </g>
+  <g data-object-id="cycle-3">
+    <title>cycle-3</title>
+    <polyline points="493.982,453.024 507.299,428.714 523.407,405.183 542.206,382.575 563.582,361.031 587.401,340.682 613.518,321.655 641.77,304.066 671.985,288.024 703.976,273.629 737.545,260.968 772.485,250.12 808.582,241.151" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.2" />
+  </g>
+  <g data-object-id="cycle-3-head">
+    <title>cycle-3-head</title>
+    <polygon points="808.582,241.151 792.801,252.285 789.425,238.698" stroke-linejoin="round" fill="#00ffff" stroke="#00ffff" stroke-width="1.0" />
+  </g>
+  <g data-object-id="spoke-perception">
+    <title>spoke-perception</title>
+    <polyline points="960,555 960,275" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="0.65" />
+  </g>
+  <g data-object-id="card-perception">
+    <title>card-perception</title>
+    <rect x="770.0" y="193.0" width="380.0" height="164.0" fill="#000000" stroke="#00ffff" stroke-width="1.8" />
+  </g>
+  <g data-object-id="accent-perception">
+    <title>accent-perception</title>
+    <polyline points="785,210 895,210" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="4.0" />
+  </g>
+  <g data-object-id="number-perception">
+    <title>number-perception</title>
+    <text x="1095.85" y="224.0" font-family="sans-serif" font-size="13.0" fill="#00ffff">01</text>
+  </g>
+  <g data-object-id="label-perception">
+    <title>label-perception</title>
+    <text x="891.25" y="246.0" font-family="sans-serif" font-size="25.0" fill="#00ffff">PERCEPTION</text>
+  </g>
+  <g data-object-id="detail-perception">
+    <title>detail-perception</title>
+    <text x="814.8" y="290.0" font-family="sans-serif" font-size="16.0" fill="#ffffff">Observe / saliency + stereo + SPU</text>
+  </g>
+  <g data-object-id="metric-perception">
+    <title>metric-perception</title>
+    <text x="852.75" y="323.0" font-family="sans-serif" font-size="15.0" fill="#d3d3d3">4 foci · 51 pts · 1128 ops</text>
+  </g>
+  <g data-object-id="transition-0">
+    <title>transition-0</title>
+    <text x="1323.8047974644667" y="307.5126265847084" font-family="sans-serif" font-size="13.0" fill="#00ffff">proposals</text>
+  </g>
+  <g data-object-id="spoke-thinking">
+    <title>spoke-thinking</title>
+    <polyline points="960,555 1435,555" stroke-linejoin="round" fill="none" stroke="#ff00ff" stroke-width="0.65" />
+  </g>
+  <g data-object-id="card-thinking">
+    <title>card-thinking</title>
+    <rect x="1245.0" y="473.0" width="380.0" height="164.0" fill="#000000" stroke="#ff00ff" stroke-width="1.8" />
+  </g>
+  <g data-object-id="accent-thinking">
+    <title>accent-thinking</title>
+    <polyline points="1260,490 1370,490" stroke-linejoin="round" fill="none" stroke="#ff00ff" stroke-width="4.0" />
+  </g>
+  <g data-object-id="number-thinking">
+    <title>number-thinking</title>
+    <text x="1570.85" y="504.0" font-family="sans-serif" font-size="13.0" fill="#ff00ff">02</text>
+  </g>
+  <g data-object-id="label-thinking">
+    <title>label-thinking</title>
+    <text x="1380.0" y="526.0" font-family="sans-serif" font-size="25.0" fill="#ff00ff">THINKING</text>
+  </g>
+  <g data-object-id="detail-thinking">
+    <title>detail-thinking</title>
+    <text x="1289.8" y="570.0" font-family="sans-serif" font-size="16.0" fill="#ffffff">Imagine / SPU + candidate futures</text>
+  </g>
+  <g data-object-id="metric-thinking">
+    <title>metric-thinking</title>
+    <text x="1327.75" y="603.0" font-family="sans-serif" font-size="15.0" fill="#d3d3d3">AV=4 · abacus=817 · H=9.91</text>
+  </g>
+  <g data-object-id="transition-1">
+    <title>transition-1</title>
+    <text x="1327.3797974644667" y="802.4873734152916" font-family="sans-serif" font-size="13.0" fill="#ff00ff">feedback</text>
+  </g>
+  <g data-object-id="spoke-learning">
+    <title>spoke-learning</title>
+    <polyline points="960,555 960,835" stroke-linejoin="round" fill="none" stroke="#ffff00" stroke-width="0.65" />
+  </g>
+  <g data-object-id="card-learning">
+    <title>card-learning</title>
+    <rect x="770.0" y="753.0" width="380.0" height="164.0" fill="#000000" stroke="#ffff00" stroke-width="1.8" />
+  </g>
+  <g data-object-id="accent-learning">
+    <title>accent-learning</title>
+    <polyline points="785,770 895,770" stroke-linejoin="round" fill="none" stroke="#ffff00" stroke-width="4.0" />
+  </g>
+  <g data-object-id="number-learning">
+    <title>number-learning</title>
+    <text x="1095.85" y="784.0" font-family="sans-serif" font-size="13.0" fill="#ffff00">03</text>
+  </g>
+  <g data-object-id="label-learning">
+    <title>label-learning</title>
+    <text x="905.0" y="806.0" font-family="sans-serif" font-size="25.0" fill="#ffff00">LEARNING</text>
+  </g>
+  <g data-object-id="detail-learning">
+    <title>detail-learning</title>
+    <text x="819.2" y="850.0" font-family="sans-serif" font-size="16.0" fill="#ffffff">Memory / beads + ISA + precision</text>
+  </g>
+  <g data-object-id="metric-learning">
+    <title>metric-learning</title>
+    <text x="848.625" y="883.0" font-family="sans-serif" font-size="15.0" fill="#d3d3d3">gain=0 · cpu · 64.8% timing</text>
+  </g>
+  <g data-object-id="transition-2">
+    <title>transition-2</title>
+    <text x="538.9952025355334" y="802.4873734152916" font-family="sans-serif" font-size="13.0" fill="#ffff00">weights</text>
+  </g>
+  <g data-object-id="spoke-action">
+    <title>spoke-action</title>
+    <polyline points="960,555 485,555" stroke-linejoin="round" fill="none" stroke="#e95420" stroke-width="0.65" />
+  </g>
+  <g data-object-id="card-action">
+    <title>card-action</title>
+    <rect x="295.0" y="473.0" width="380.0" height="164.0" fill="#000000" stroke="#e95420" stroke-width="1.8" />
+  </g>
+  <g data-object-id="accent-action">
+    <title>accent-action</title>
+    <polyline points="310,490 420,490" stroke-linejoin="round" fill="none" stroke="#e95420" stroke-width="4.0" />
+  </g>
+  <g data-object-id="number-action">
+    <title>number-action</title>
+    <text x="620.85" y="504.0" font-family="sans-serif" font-size="13.0" fill="#e95420">04</text>
+  </g>
+  <g data-object-id="label-action">
+    <title>label-action</title>
+    <text x="443.75" y="526.0" font-family="sans-serif" font-size="25.0" fill="#e95420">ACTION</text>
+  </g>
+  <g data-object-id="detail-action">
+    <title>detail-action</title>
+    <text x="344.2" y="570.0" font-family="sans-serif" font-size="16.0" fill="#ffffff">Navigate / Dijkstra + bead moves</text>
+  </g>
+  <g data-object-id="metric-action">
+    <title>metric-action</title>
+    <text x="452.0" y="603.0" font-family="sans-serif" font-size="15.0" fill="#d3d3d3">30 -&gt; 15</text>
+  </g>
+  <g data-object-id="transition-3">
+    <title>transition-3</title>
+    <text x="521.1202025355334" y="307.5126265847084" font-family="sans-serif" font-size="13.0" fill="#e95420">observations</text>
+  </g>
+  <g data-object-id="core-outer">
+    <title>core-outer</title>
+    <ellipse cx="960.0" cy="555.0" rx="238.0" ry="163.0" fill="#000000" stroke="#00ffff" stroke-width="1.5" />
+  </g>
+  <g data-object-id="core-inner">
+    <title>core-inner</title>
+    <ellipse cx="960.0" cy="555.0" rx="204.0" ry="132.0" fill="#000000" stroke="#ff00ff" stroke-width="1.1" />
+  </g>
+  <g data-object-id="core-label">
+    <title>core-label</title>
+    <text x="869.25" y="493.0" font-family="sans-serif" font-size="22.0" fill="#00ffff">SHARED GEOMETRY</text>
+  </g>
+  <g data-object-id="core-points">
+    <title>core-points</title>
+    <text x="787.025" y="532.0" font-family="sans-serif" font-size="17.0" fill="#ffffff">1128 SPU ops · 51 points · abacus 817</text>
+  </g>
+  <g data-object-id="core-provenance">
+    <title>core-provenance</title>
+    <text x="825.25" y="565.0" font-family="sans-serif" font-size="14.0" fill="#d3d3d3">observed / imagined / reconstructed</text>
+  </g>
+  <g data-object-id="vividness-label">
+    <title>vividness-label</title>
+    <text x="917.925" y="613.0" font-family="sans-serif" font-size="17.0" fill="#ff00ff">VIVIDNESS</text>
+  </g>
+  <g data-object-id="vividness-metrics">
+    <title>vividness-metrics</title>
+    <text x="844.5" y="644.0" font-family="sans-serif" font-size="14.0" fill="#ffff00">14.13 GF/s · gain 0 · 0.043 px</text>
+  </g>
+  <g data-object-id="footer">
+    <title>footer</title>
+    <text x="642.375" y="1006.0" font-family="sans-serif" font-size="15.0" fill="#d3d3d3">Geometric vividness, not emotion · explicit provenance · external actions = 0</text>
+  </g>
+  <g data-object-id="signature">
+    <title>signature</title>
+    <text x="678.95" y="1041.0" font-family="sans-serif" font-size="14.0" fill="#808080">A remixable instrument for seeing, imagining, learning, and making paths.</text>
+  </g>
+</svg>

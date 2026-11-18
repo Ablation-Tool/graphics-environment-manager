@@ -1,0 +1,293 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Zoe ecological sensorimotor working memory">
+  <title>Zoe ecological sensorimotor working memory</title>
+  <rect x="0" y="0" width="1600.0" height="1000.0" fill="#ffffff" />
+  <g data-object-id="background">
+    <title>background</title>
+    <rect x="0.0" y="0.0" width="1600.0" height="1000.0" fill="#000000" stroke="#000000" stroke-width="1.0" />
+  </g>
+  <g data-object-id="title">
+    <title>title</title>
+    <text x="60.0" y="55.0" font-family="sans-serif" font-size="28.0" fill="#00ffff">ZOE / ECOLOGICAL WORKING MEMORY</text>
+  </g>
+  <g data-object-id="subtitle">
+    <title>subtitle</title>
+    <text x="60.0" y="94.0" font-family="sans-serif" font-size="18.0" fill="#d3d3d3">Environment → perception → action → learning → next perception</text>
+  </g>
+  <g data-object-id="scope">
+    <title>scope</title>
+    <text x="60.0" y="128.0" font-family="sans-serif" font-size="14.0" fill="#808080">Declared resource-feedback model · exact soroban state transitions · not a biological calibration</text>
+  </g>
+  <g data-object-id="energy-label">
+    <title>energy-label</title>
+    <text x="65.0" y="220.0" font-family="sans-serif" font-size="16.0" fill="#ffff00">ENERGY / predicted versus observed</text>
+  </g>
+  <g data-object-id="action-label">
+    <title>action-label</title>
+    <text x="65.0" y="640.0" font-family="sans-serif" font-size="16.0" fill="#ff00ff">ACTION / extend or conserve</text>
+  </g>
+  <g data-object-id="learning-label">
+    <title>learning-label</title>
+    <text x="65.0" y="770.0" font-family="sans-serif" font-size="16.0" fill="#00ffff">LEARNING / gain from prediction error</text>
+  </g>
+  <g data-object-id="stem-0">
+    <title>stem-0</title>
+    <polyline points="100,590 100,518" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-0">
+    <title>actual-0</title>
+    <ellipse cx="100.0" cy="518.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-0">
+    <title>predicted-0</title>
+    <ellipse cx="125.0" cy="422.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-0">
+    <title>action-0</title>
+    <text x="65.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-0">
+    <title>position-0</title>
+    <text x="85.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p1</text>
+  </g>
+  <g data-object-id="error-0">
+    <title>error-0</title>
+    <text x="85.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=3</text>
+  </g>
+  <g data-object-id="gain-0">
+    <title>gain-0</title>
+    <text x="85.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#808080">g=0</text>
+  </g>
+  <g data-object-id="stem-1">
+    <title>stem-1</title>
+    <polyline points="270,590 270,454" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-1">
+    <title>actual-1</title>
+    <ellipse cx="270.0" cy="454.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-1">
+    <title>predicted-1</title>
+    <ellipse cx="295.0" cy="550.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-1">
+    <title>energy-link-1</title>
+    <polyline points="100,518 270,454" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-1">
+    <title>action-1</title>
+    <text x="235.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-1">
+    <title>position-1</title>
+    <text x="255.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p2</text>
+  </g>
+  <g data-object-id="error-1">
+    <title>error-1</title>
+    <text x="255.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=3</text>
+  </g>
+  <g data-object-id="gain-1">
+    <title>gain-1</title>
+    <text x="255.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#ffff00">g=1</text>
+  </g>
+  <g data-object-id="stem-2">
+    <title>stem-2</title>
+    <polyline points="440,590 440,390" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-2">
+    <title>actual-2</title>
+    <ellipse cx="440.0" cy="390.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-2">
+    <title>predicted-2</title>
+    <ellipse cx="465.0" cy="390.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-2">
+    <title>energy-link-2</title>
+    <polyline points="270,454 440,390" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-2">
+    <title>action-2</title>
+    <text x="405.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-2">
+    <title>position-2</title>
+    <text x="425.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p3</text>
+  </g>
+  <g data-object-id="error-2">
+    <title>error-2</title>
+    <text x="425.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=0</text>
+  </g>
+  <g data-object-id="gain-2">
+    <title>gain-2</title>
+    <text x="425.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#808080">g=1</text>
+  </g>
+  <g data-object-id="stem-3">
+    <title>stem-3</title>
+    <polyline points="610,590 610,326" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-3">
+    <title>actual-3</title>
+    <ellipse cx="610.0" cy="326.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-3">
+    <title>predicted-3</title>
+    <ellipse cx="635.0" cy="262.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-3">
+    <title>energy-link-3</title>
+    <polyline points="440,390 610,326" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-3">
+    <title>action-3</title>
+    <text x="575.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-3">
+    <title>position-3</title>
+    <text x="595.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p4</text>
+  </g>
+  <g data-object-id="error-3">
+    <title>error-3</title>
+    <text x="595.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=2</text>
+  </g>
+  <g data-object-id="gain-3">
+    <title>gain-3</title>
+    <text x="595.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#ffff00">g=0</text>
+  </g>
+  <g data-object-id="stem-4">
+    <title>stem-4</title>
+    <polyline points="780,590 780,262" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-4">
+    <title>actual-4</title>
+    <ellipse cx="780.0" cy="262.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-4">
+    <title>predicted-4</title>
+    <ellipse cx="805.0" cy="358.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-4">
+    <title>energy-link-4</title>
+    <polyline points="610,326 780,262" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-4">
+    <title>action-4</title>
+    <text x="745.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-4">
+    <title>position-4</title>
+    <text x="765.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p5</text>
+  </g>
+  <g data-object-id="error-4">
+    <title>error-4</title>
+    <text x="765.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=3</text>
+  </g>
+  <g data-object-id="gain-4">
+    <title>gain-4</title>
+    <text x="765.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#ffff00">g=1</text>
+  </g>
+  <g data-object-id="stem-5">
+    <title>stem-5</title>
+    <polyline points="950,590 950,294" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-5">
+    <title>actual-5</title>
+    <ellipse cx="950.0" cy="294.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-5">
+    <title>predicted-5</title>
+    <ellipse cx="975.0" cy="262.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-5">
+    <title>energy-link-5</title>
+    <polyline points="780,262 950,294" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-5">
+    <title>action-5</title>
+    <text x="915.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-5">
+    <title>position-5</title>
+    <text x="935.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p6</text>
+  </g>
+  <g data-object-id="error-5">
+    <title>error-5</title>
+    <text x="935.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=1</text>
+  </g>
+  <g data-object-id="gain-5">
+    <title>gain-5</title>
+    <text x="935.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#ffff00">g=0</text>
+  </g>
+  <g data-object-id="stem-6">
+    <title>stem-6</title>
+    <polyline points="1120,590 1120,358" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-6">
+    <title>actual-6</title>
+    <ellipse cx="1120.0" cy="358.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-6">
+    <title>predicted-6</title>
+    <ellipse cx="1145.0" cy="326.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-6">
+    <title>energy-link-6</title>
+    <polyline points="950,294 1120,358" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-6">
+    <title>action-6</title>
+    <text x="1085.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-6">
+    <title>position-6</title>
+    <text x="1105.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p7</text>
+  </g>
+  <g data-object-id="error-6">
+    <title>error-6</title>
+    <text x="1105.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=1</text>
+  </g>
+  <g data-object-id="gain-6">
+    <title>gain-6</title>
+    <text x="1105.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#808080">g=0</text>
+  </g>
+  <g data-object-id="stem-7">
+    <title>stem-7</title>
+    <polyline points="1290,590 1290,422" stroke-linejoin="round" fill="none" stroke="#008000" stroke-width="3.0" />
+  </g>
+  <g data-object-id="actual-7">
+    <title>actual-7</title>
+    <ellipse cx="1290.0" cy="422.0" rx="12.0" ry="12.0" fill="#00ffff" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="predicted-7">
+    <title>predicted-7</title>
+    <ellipse cx="1315.0" cy="390.0" rx="9.0" ry="9.0" fill="#000000" stroke="#ff00ff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="energy-link-7">
+    <title>energy-link-7</title>
+    <polyline points="1120,358 1290,422" stroke-linejoin="round" fill="none" stroke="#00ffff" stroke-width="2.0" />
+  </g>
+  <g data-object-id="action-7">
+    <title>action-7</title>
+    <text x="1255.0" y="680.0" font-family="sans-serif" font-size="12.0" fill="#008000">EXTEND</text>
+  </g>
+  <g data-object-id="position-7">
+    <title>position-7</title>
+    <text x="1275.0" y="715.0" font-family="sans-serif" font-size="12.0" fill="#808080">p8</text>
+  </g>
+  <g data-object-id="error-7">
+    <title>error-7</title>
+    <text x="1275.0" y="805.0" font-family="sans-serif" font-size="13.0" fill="#ffffff">e=1</text>
+  </g>
+  <g data-object-id="gain-7">
+    <title>gain-7</title>
+    <text x="1275.0" y="840.0" font-family="sans-serif" font-size="13.0" fill="#808080">g=0</text>
+  </g>
+  <g data-object-id="energy-legend">
+    <title>energy-legend</title>
+    <text x="60.0" y="590.0" font-family="sans-serif" font-size="13.0" fill="#d3d3d3">cyan = observed · magenta = predicted</text>
+  </g>
+  <g data-object-id="checks">
+    <title>checks</title>
+    <text x="60.0" y="940.0" font-family="sans-serif" font-size="14.0" fill="#008000">Exact bead arithmetic · reversible checkpoints · external actions = 0 · no hardware actuated</text>
+  </g>
+</svg>

@@ -3,9 +3,12 @@ from __future__ import annotations
 from copy import deepcopy
 import math
 from pathlib import Path
+import statistics
 
 import numpy as np
 
+from .abacus_cognition import expression_report
+from .ecology_cognition import ecology_report
 from .cyclic_flow import cyclic_flow_scene
 from .execution_cognition import benchmark_dct
 from .imagery import run_document
@@ -47,7 +50,7 @@ def _texture(path, spu):
     return values.reshape(side, side), "SPU instruction bytes reshaped as a structural texture"
 
 
-def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=3, template=None, benchmark_repeat=3, image_path=None, attention_steps=4):
+def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=3, template=None, benchmark_repeat=3, image_path=None, attention_steps=4, abacus_expression="538+279", ecology_steps=8):
     spu = _load_spu(spu_path)
     spu_report = spu.report()
     image, texture_source = _texture(texture_path, spu)
@@ -60,6 +63,8 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
     else:
         rgb, source = load_rgb(image_path)
         saliency = saliency_report(rgb, source=source, steps=attention_steps)
+    abacus = expression_report(abacus_expression)
+    ecology = ecology_report(steps=ecology_steps)
     native = {
         "spu_instruction_count": spu_report["instruction_count"],
         "spu_path_cost": spu_report["execution_imagery"]["path"]["cost"],
@@ -71,6 +76,12 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
         "saliency_feature_maps": saliency["feature_map_counts"]["total"],
         "saliency_attended_count": len(saliency["scanpath"]),
         "saliency_peak_xy": saliency["scanpath"][0]["source_xy"] if saliency["scanpath"] else None,
+        "abacus_value": abacus["final"]["value"],
+        "abacus_operations": len(abacus["operations"]),
+        "ecology_gain": ecology["final"]["gain"]["value"],
+        "ecology_position": ecology["final"]["position"]["value"],
+        "ecology_mean_prediction_error": statistics.mean(item["prediction_error"] for item in ecology["history"]),
+        "ecology_learning_updates": sum(item["learning_updated"] for item in ecology["history"]),
     }
     report = {
         "schema_version": 1,
@@ -78,6 +89,8 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
         "creative_template": template,
         "native_cognition": native,
         "saliency": saliency,
+        "abacus": abacus,
+        "ecology": ecology,
         "spu": spu_report,
         "texture": texture,
         "execution": execution,
@@ -93,10 +106,10 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
             ],
         },
         "cognitive_cycle": {
-            "perception": "RGB saliency, real SPU bytes, structural texture, and labeled stereo observations",
-            "imagery": "SPU execution path/timing projection, saliency-guided attention, and stereo view prediction",
-            "learning": "historical prediction error and precision-weighted reconstruction",
-            "action": "Dijkstra attention and execution paths annotated inside retained cyclic graphs plus roofline-selected computation backends",
+            "perception": "RGB saliency, real SPU bytes, structural texture, and labeled stereo/resource observations",
+            "imagery": "exact soroban arithmetic, SPU execution path/timing projection, saliency-guided attention, and stereo view prediction",
+            "learning": "historical prediction error, precision-weighted reconstruction, and measured ecological gain updates",
+            "action": "Dijkstra attention and execution paths, reversible bead transitions, and ecological extend/conserve decisions",
         },
         "vividness": {
             "spu_timing_known_ratio": native["spu_timing_known_ratio"],
@@ -108,13 +121,26 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
                 "attended_locations": native["saliency_attended_count"],
                 "scope": "computed local conspicuity and spatial detail, not subjective salience or emotion",
             },
+            "abacus": {
+                "value": native["abacus_value"],
+                "operation_count": native["abacus_operations"],
+                "scope": "exact symbolic working memory and reversible bead transitions, not a physical device",
+            },
+            "ecology": {
+                "position": native["ecology_position"],
+                "gain": native["ecology_gain"],
+                "mean_prediction_error": native["ecology_mean_prediction_error"],
+                "learning_updates": native["ecology_learning_updates"],
+                "scope": "declared resource-feedback model, not a calibrated biological model",
+            },
             "stereo": stereo["vividness"],
             "scope": "geometric, structural, and temporal detail/stability, not emotion",
         },
-        "provenance": "observed RGB/SPU/stereo measurements remain distinct from saliency projections, imagined schedules, textures, and Dijkstra paths",
+        "provenance": "observed RGB/SPU/stereo/resource measurements remain distinct from saliency projections, imagined schedules, textures, Dijkstra paths, and the declared ecological model",
         "summary": (
             f"{native['spu_instruction_count']} SPU instructions · "
             f"42 saliency maps · {native['saliency_attended_count']} foci · "
+            f"abacus={native['abacus_value']} · gain={native['ecology_gain']} · "
             f"texture entropy={native['texture_entropy_bits']:.3f} bits · "
             f"{stereo['vividness']['reconstructed_detail_count']} reconstructed points · "
             f"backend={native['execution_backend']}"

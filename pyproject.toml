@@ -21,7 +21,7 @@ drop = ["tkinterdnd2==0.7.0"]
 windows = ["pywinpty>=2,<3; sys_platform == 'win32'"]
 halo = ["numpy>=2.3.5,<3"]
 imagery = ["numpy>=2.3.5,<3"]
-cognition = ["numpy>=2.3.5,<3", "ablation-tool>=2.95.0"]
+cognition = ["numpy>=2.3.5,<3", "Pillow>=10,<13", "ablation-tool>=2.95.0"]
 predict = [
     "numpy>=2.3.5,<3",
     "onnxruntime>=1.31.1,<2",

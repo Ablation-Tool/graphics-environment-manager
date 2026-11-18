@@ -62,3 +62,24 @@ by Daniel Cohen-Or, Olga Sorkine-Hornung, and Chen Greif. Approximate landmark
 coordinates were extracted from a user-supplied screenshot for mathematical
 analysis. The original figure and screenshot are not redistributed in this
 repository.
+
+Multiscale visual attention
+---------------------------
+`gem.saliency_cognition` is an independent NumPy implementation of the feature
+and attention equations published by Laurent Itti, Christof Koch, and Ernst
+Niebur in "A Model of Saliency-Based Visual Attention for Rapid Scene Analysis"
+(IEEE PAMI 20(11), 1998). The iLab Neuromorphic Vision Toolkit and its published
+source snapshot were used as references; no iLab source file is bundled here.
+
+References:
+- https://ilab.usc.edu/publications/doc/Itti_etal98pami.pdf
+- https://ilab.usc.edu/bu/theory/index.html
+- https://ilab.usc.edu/toolkit/downloads.shtml
+
+The toolkit identifies GPL-2.0-or-later and a historical patent notice. This
+project retains GPL-3.0-or-later. These acknowledgments do not assert patent
+clearance, affiliation, biological validation, or endorsement by USC/iLab.
+
+A public Vivotek sample image was used only for local input testing. The sample
+is not redistributed in this repository, and no Vivotek firmware or runtime is
+included. Source: https://ftpmirror.your.org/pub/misc/ftp.vivotek.com/snapshotd.jpg

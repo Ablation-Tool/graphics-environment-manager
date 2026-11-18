@@ -332,6 +332,30 @@ python -m gem cognition --spu /path/to/spu.elf --texture structural-image.npz --
 
 Real SPU ELF inputs are decoded only; no target executable is run. `ablation-tool` supplies the SPU decoder through the optional `cognition` dependency set. A supplied NPZ texture must contain an `image` array. Without one, the field reshapes the decoded SPU instruction bytes into a structural texture.
 
+### Multiscale RGB saliency and attention
+
+`gem.saliency_cognition` implements the feature and attention equations from Itti, Koch, and Niebur's 1998 [A Model of Saliency-Based Visual Attention for Rapid Scene Analysis](https://ilab.usc.edu/publications/doc/Itti_etal98pami.pdf), with the [iLab bottom-up theory](https://ilab.usc.edu/bu/theory/index.html) and published source snapshot as references. It is an independent NumPy implementation inside the existing cognitive field, not a copy of the iLab C++ toolkit. The inspected `saliency-20140505` archive has SHA-256 `c17af77c0796439d0e1a188841525133432c61ea176d2583a03acb072b20644b`; no SVN revision is claimed.
+
+Nine dyadic Gaussian scales use a normalized nine-tap binomial filter. For center scales \(c\in\{2,3,4\}\), surround scale \(s=c+\delta\), and \(\delta\in\{3,4\}\), the coarser map is bilinearly resized before pointwise subtraction. Intensity contrast is \(|I(c)-I(s)|\). Color uses the paper's luminance-normalized red/green and blue/yellow opponency, with hue suppressed at or below one tenth of maximum intensity. Four orientation channels use zero-DC 9×9 quadrature Gabor filters with period 7, standard deviation 7/3, and absolute responses summed across phases. This produces six intensity, twelve color, and twenty-four orientation maps: **42 total**.
+
+For a nonnegative feature map \(X\) with global maximum \(M>0\), let \(\bar m\) be the mean of its other strict eight-neighbor local maxima. The normalization is
+
+\[
+N(X)=\frac{X}{M}\left(1-\frac{\bar m}{M}\right)^2,
+\qquad \bar m=0\ \text{when no other local maximum exists}.
+\]
+
+An all-zero map and a map without a strict local maximum remain zero. Feature maps are added at scale four after normalization. Orientation maps are first combined within each angle, then across angles. The saliency input is \((N(\bar I)+N(\bar C)+N(\bar O))/3\).
+
+Attention selects the deterministic maximum, records its source coordinate, and suppresses a disk whose radius is one sixth of the smaller saliency-map dimension. Continuous leaky-neuron timing and biological validation are not simulated. Between selected foci, exact four-neighbor Dijkstra uses the unchanged pre-inhibition map with edge cost \(L/\max(S,0.001)\), where \(L\) is Euclidean pixel distance. This is attention routing, not physical navigation, object identity, or a replacement for the retained cyclic graph.
+
+```bash
+python -m pip install -e '.[cognition]'
+python -m gem cognition --image /path/to/image.jpg --foci 4 --output cognition.json
+```
+
+Image files are limited to 32 MiB and 16,777,216 source pixels, resized within 256 pixels per side, and must retain at least 16 pixels per processed side. Pillow is included in the `cognition` extra. Every file-derived report retains the source path, SHA-256, original and processed dimensions, and `live_camera=False`. Without `--image`, the command uses a documented synthetic intensity/color pop-out. No camera, target executable, or external action is used. The Vivotek public sample at `https://ftpmirror.your.org/pub/misc/ftp.vivotek.com/snapshotd.jpg` was evaluated locally as an image source; it is not redistributed in this repository. No Vivotek firmware or proprietary runtime is included or executed.
+
 ### Roofline execution planning
 
 `gem.execution_cognition` supplies workload models and architecture selection. For declared floating-point work \(F\), transferred bytes \(M\), compute rate \(R\), and memory bandwidth \(B\), the lower bound is
@@ -411,10 +435,10 @@ A possible passive-RC biological experiment belongs outside this game model. Ohm
 python stress/run_stress.py
 python stress/native_stress.py
 python stress/gem_stress.py
-python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
+python -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_saliency_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
 
 stress/nested_x11.sh env PYTHONPATH=. \
-  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
+  /usr/bin/python3 -m unittest tools.test_workbench tools.test_library tools.test_unlock_guard tools.test_eye tools.test_imagery tools.test_cyclic_flow tools.test_spu_cognition tools.test_texture_cognition tools.test_saliency_cognition tools.test_cognitive_field tools.test_execution_cognition tools.test_halo tools.test_tetris tools.test_feed
 ```
 
 The nested X11 wrapper isolates native checks from the live desktop. System GTK/Cairo and `pdftotext` are external requirements; PNG export needs Cairo. The manual index is a local artifact and is not bundled in the package.

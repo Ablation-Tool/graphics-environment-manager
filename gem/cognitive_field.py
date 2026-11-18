@@ -9,6 +9,7 @@ import numpy as np
 from .cyclic_flow import cyclic_flow_scene
 from .execution_cognition import benchmark_dct
 from .imagery import run_document
+from .saliency_cognition import load_rgb, prototype_image, saliency_report
 from .spu_cognition import SPUExecutionField
 from .texture_cognition import texture_descriptor
 
@@ -46,7 +47,7 @@ def _texture(path, spu):
     return values.reshape(side, side), "SPU instruction bytes reshaped as a structural texture"
 
 
-def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=3, template=None, benchmark_repeat=3):
+def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=3, template=None, benchmark_repeat=3, image_path=None, attention_steps=4):
     spu = _load_spu(spu_path)
     spu_report = spu.report()
     image, texture_source = _texture(texture_path, spu)
@@ -54,6 +55,11 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
     texture["source"] = texture_source
     execution = benchmark_dct(texture["histogram"], repeat=benchmark_repeat)
     stereo = run_document(previous=previous, steps=stereo_steps)
+    if image_path is None:
+        saliency = saliency_report(prototype_image(), steps=attention_steps)
+    else:
+        rgb, source = load_rgb(image_path)
+        saliency = saliency_report(rgb, source=source, steps=attention_steps)
     native = {
         "spu_instruction_count": spu_report["instruction_count"],
         "spu_path_cost": spu_report["execution_imagery"]["path"]["cost"],
@@ -62,12 +68,16 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
         "texture_source": texture_source,
         "execution_backend": execution["selection"]["selected_backend"],
         "execution_gflops": execution["cpu_evidence"]["achieved_compute_gflops"],
+        "saliency_feature_maps": saliency["feature_map_counts"]["total"],
+        "saliency_attended_count": len(saliency["scanpath"]),
+        "saliency_peak_xy": saliency["scanpath"][0]["source_xy"] if saliency["scanpath"] else None,
     }
     report = {
         "schema_version": 1,
         "instrument": "Zoe native cognitive field",
         "creative_template": template,
         "native_cognition": native,
+        "saliency": saliency,
         "spu": spu_report,
         "texture": texture,
         "execution": execution,
@@ -83,27 +93,34 @@ def run_cognition(spu_path=None, texture_path=None, previous=None, stereo_steps=
             ],
         },
         "cognitive_cycle": {
-            "perception": "real SPU bytes, structural texture, and labeled stereo observations",
-            "imagery": "SPU execution path/timing projection and stereo view prediction",
+            "perception": "RGB saliency, real SPU bytes, structural texture, and labeled stereo observations",
+            "imagery": "SPU execution path/timing projection, saliency-guided attention, and stereo view prediction",
             "learning": "historical prediction error and precision-weighted reconstruction",
-            "action": "Dijkstra paths annotated inside the retained cyclic graph plus roofline-selected computation backends",
+            "action": "Dijkstra attention and execution paths annotated inside retained cyclic graphs plus roofline-selected computation backends",
         },
         "vividness": {
             "spu_timing_known_ratio": native["spu_timing_known_ratio"],
             "texture_entropy_bits": native["texture_entropy_bits"],
             "execution_backend": native["execution_backend"],
             "execution_gflops": native["execution_gflops"],
+            "saliency": {
+                "feature_maps": native["saliency_feature_maps"],
+                "attended_locations": native["saliency_attended_count"],
+                "scope": "computed local conspicuity and spatial detail, not subjective salience or emotion",
+            },
             "stereo": stereo["vividness"],
             "scope": "geometric, structural, and temporal detail/stability, not emotion",
         },
-        "provenance": "observed bytes and stereo measurements remain distinct from imagined schedules, textures, and Dijkstra projections",
+        "provenance": "observed RGB/SPU/stereo measurements remain distinct from saliency projections, imagined schedules, textures, and Dijkstra paths",
         "summary": (
             f"{native['spu_instruction_count']} SPU instructions · "
+            f"42 saliency maps · {native['saliency_attended_count']} foci · "
             f"texture entropy={native['texture_entropy_bits']:.3f} bits · "
             f"{stereo['vividness']['reconstructed_detail_count']} reconstructed points · "
             f"backend={native['execution_backend']}"
         ),
         "computation_performed": True,
+        "actual_camera_used": False,
         "external_actions": 0,
         "executed": False,
     }

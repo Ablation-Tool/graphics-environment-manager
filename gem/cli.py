@@ -101,8 +101,10 @@ def _parser():
     imagery.add_argument("--layout", choices=("panels", "network"), default="panels", help="visual layout for exported scenes")
     imagery.add_argument("--template", help="cyclic-flow JSON template; implies --layout network")
 
-    cognition = commands.add_parser("cognition", help="run Zoe's native SPU, texture, stereo, and execution-imagery field")
+    cognition = commands.add_parser("cognition", help="run Zoe's shared RGB saliency, SPU, texture, stereo, and execution-imagery field")
     cognition.add_argument("--spu", help="SPU ELF artifact; default: documented synthetic instruction words")
+    cognition.add_argument("--image", help="RGB image file for saliency and attention; default: documented synthetic pop-out")
+    cognition.add_argument("--foci", type=int, default=4, help="attention selections with inhibition of return, from 1 to 8")
     cognition.add_argument("--texture", help="NPZ containing a grayscale image array; default: SPU byte texture")
     cognition.add_argument("--previous", help="earlier stereo imagery JSON report for historical transition costs")
     cognition.add_argument("--steps", type=int, default=3, help="stereo observations to acquire, from 1 to 8")
@@ -414,6 +416,8 @@ def main(argv=None):
                 stereo_steps=arguments.steps,
                 template=template,
                 benchmark_repeat=arguments.benchmark,
+                image_path=arguments.image,
+                attention_steps=arguments.foci,
             )
             scene, augmented = cognition_scene(report)
             output = Path(arguments.output)

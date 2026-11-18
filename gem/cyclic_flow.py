@@ -117,8 +117,8 @@ def cyclic_flow_scene(report, template=None):
     native = report.get("native_cognition")
     if native is not None:
         details["perception"] = [
-            "Observe / stereo + SPU structure",
-            f"{detail_count} pts · {native['spu_instruction_count']} ops",
+            "Observe / saliency + stereo + SPU",
+            f"{native.get('saliency_attended_count', 0)} foci · {detail_count} pts · {native['spu_instruction_count']} ops",
         ]
         details["thinking"] = [
             "Imagine / SPU + candidate futures",

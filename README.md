@@ -93,20 +93,23 @@ See [the architecture, input schema, creative template, and limits](COGNITION.md
 </details>
 
 <details>
-<summary><strong>Native cognitive field: SPU, texture, execution imagery, and Beowulf structure</strong></summary>
+<summary><strong>Native cognitive field: RGB saliency, SPU, texture, execution imagery, and Beowulf structure</strong></summary>
 
-`gem cognition` unifies real SPU ELF decoding, local-storage semantics, pipeline/latency projections, Dijkstra execution paths, Ghidoni-style structural texture, volumetric skeletons, stereo reconstruction, and historical learning in one native cognitive field. Observed bytes remain distinct from imagined schedules and paths.
+`gem cognition` unifies multiscale RGB saliency, attention with inhibition of return, real SPU ELF decoding, local-storage semantics, pipeline/latency projections, Dijkstra attention and execution paths, Ghidoni-style structural texture, volumetric skeletons, stereo reconstruction, and historical learning in one native cognitive field. Observed pixels and bytes remain distinct from imagined schedules and paths.
 
 ```bash
 python -m pip install -e '.[cognition]'
 python -m gem cognition --output cognition.json
+python -m gem cognition --image /path/to/image.jpg --foci 4 --output saliency.json
 python -m gem cognition --spu /path/to/spu.elf --steps 4 --output cognition.png
 python -m gem cognition --spu /path/to/spu.elf --texture structural-image.npz --benchmark 5 --output cognition.gem
 ```
 
+Saliency implements the 1998 Itti–Koch–Niebur equations: nine Gaussian scales, six intensity maps, twelve color-opponency maps, twenty-four orientation maps, competitive normalization, winner selection, and inhibition of return. Dijkstra connects attended locations over the unchanged saliency field. The optional Pillow input path preserves image hashes and dimensions; the default is a documented synthetic pop-out, not a live camera. This is computed visual attention, not biological validation, semantic recognition, or subjective experience.
+
 SPU execution imagery includes instruction-latency paths and a bounded dual-issue projection with explicit unknowns. Roofline execution planning uses \(T_{\min}\geq\max(F/R,M/B)\) with declared DCT, FFT, and matrix workload assumptions. CPU calibration records actual DCT timings and achieved GFLOP/s and bandwidth; NVIDIA cluster profiles remain reference-only unless hardware execution is independently validated. Exact priority-queue Dijkstra stays on the CPU path rather than being replaced by an unproven parallel substitute. Texture descriptors use normalized Dijkstra cost versus normalized L1 distance, with the zero-distance seed excluded. Volumetric skeletons retain the original cyclic graph while recording the selected predecessor tree. PPE/SPE/MFC/EIB relationships form the declared Beowulf structural model; they are not presented as a cluster runtime trace.
 
-The Cyclic Field visualization includes actual SPU instruction counts, texture entropy, timing coverage, stereo vividness, and navigation. JSON exports retain the complete SPU, texture, stereo, and provenance evidence. See [the native cognitive architecture and limits](COGNITION.md#native-shared-cognitive-field).
+The Cyclic Field visualization includes actual SPU instruction counts, texture entropy, timing coverage, stereo vividness, and navigation. JSON exports retain the complete saliency, SPU, texture, stereo, and provenance evidence. See [the native cognitive architecture and limits](COGNITION.md#native-shared-cognitive-field).
 
 </details>
 
